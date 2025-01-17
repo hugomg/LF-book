@@ -31,15 +31,18 @@
 #let example    = thmplain("examplo", "Examplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
 
-= Autômatos Finitos Determinísticos
+= Autômatos Finitos
 
-Um autômato finito é uma tupla $cal(A) = (Σ, Q, S, F, Δ)$, que contém
+#image("imgs/tennis.dot.svg")
+#image("imgs/tennis2.dot.svg")
 
-- $Σ$: o alfabeto 
-- $Q$: o conjunto de estados.
-- $S$: o conjunto de estados iniciais.
-- $F$: o conjunto de estados finais.
-- $Δ$: o conjunto de arestas.
+Um autômato finito é uma tupla $cal(A) = (Σ, Q, S, F, Δ)$, que contém:
+
+/ $Σ$: o alfabeto.
+/ $Q$: o conjunto de estados.
+/ $S$: o conjunto de estados iniciais.
+/ $F$: o conjunto de estados finais.
+/ $Δ$: o conjunto de arestas.
 
 O alfabeto $Σ$ é um conjunto finito de caracteres,
 que descreve quais caracteres aparecem nas arestas do autômato.
@@ -55,15 +58,15 @@ Pense em uma tabela de um banco de dados relacional,
 em que as linhas são as arestas,
 e as colunas são o estado de origem, o estado de destino, e o caractere.
 
-Um autômato finito determinístico (AFD)
+Um *Autômato Finito Determinístico (AFD)*
 tem um único estado inicial,
-e o conjunto de arestas é uma função parcial:
-dados $X$ e $a$, existe no máximo um $Y$ tal que #box[$(X,a,Y) ∈ Δ$].
+e o conjunto de arestas é uma função parcial de $X$ e $a$:
+dados $X$ e $a$, existe no máximo um $Y$ tal que $(X,a,Y) ∈ Δ$.
 
-Um autômato finito não-determinístico (AFND)
+Um *Autômato Finito Não-Determinístico (AFND)*
 não tem estas restrições.
 Eles podem ter mais de um estado inicial
-e o conjunto de arestas é uma relação qualquer.
+e o conjunto de arestas pode ser uma relação qualquer.
 
 obs.: Algumas apresentações de AFD exigem que
 a função de transição seja total.
@@ -221,7 +224,7 @@ Por extenso:
     - $lab(P) = ε$
     - $ars(P) = δ$
 
-    Caso base: $(X ∈ F) / bigstep(X, ε)$
+    / Caso base: $(X ∈ F) / bigstep(X, ε)$
 
     Escolha $P=pathnil(X)$. temos
 
@@ -232,7 +235,7 @@ Por extenso:
     ars(pathnil(X)) &= {} ⊆ δ \
     $
     
-    Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
+    / Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
 
     Aplicando a hipótese de indução em $bigstep(Y, w')$,
     sabemos que existe $p'$ tal que 

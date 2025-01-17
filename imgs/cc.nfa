@@ -1,0 +1,7 @@
+state A B C
+start A
+final B C
+
+A B a
+B C a
+C A a
