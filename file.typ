@@ -31,6 +31,45 @@
 #let example    = thmplain("examplo", "Examplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
 
+= Autômatos Finitos Determinísticos
+
+Um autômato finito é uma tupla $cal(A) = (Σ, Q, S, F, Δ)$, que contém
+
+- $Σ$: o alfabeto 
+- $Q$: o conjunto de estados.
+- $S$: o conjunto de estados iniciais.
+- $F$: o conjunto de estados finais.
+- $Δ$: o conjunto de arestas.
+
+O alfabeto $Σ$ é um conjunto finito de caracteres,
+que descreve quais caracteres aparecem nas arestas do autômato.
+
+O conjunto de estados $Q$ deve ser finito, 
+o que é inclusive a principal limitação dos autômatos finitos.
+Os caminhos que percorremos no autômato começam
+em um estado de $S$ e terminam em algum estado de $F$.
+
+Uma aresta é uma tripla da forma $(Q × Σ × Q)$.
+O conjunto $Δ$ descreve uma relação de transição entre estados.
+Pense em uma tabela de um banco de dados relacional,
+em que as linhas são as arestas,
+e as colunas são o estado de origem, o estado de destino, e o caractere.
+
+Um autômato finito determinístico (AFD)
+tem um único estado inicial,
+e o conjunto de arestas é uma função parcial:
+dados $X$ e $a$, existe no máximo um $Y$ tal que #box[$(X,a,Y) ∈ Δ$].
+
+Um autômato finito não-determinístico (AFND)
+não tem estas restrições.
+Eles podem ter mais de um estado inicial
+e o conjunto de arestas é uma relação qualquer.
+
+obs.: Algumas apresentações de AFD exigem que
+a função de transição seja total.
+Dá pra fazer isso se introduzirmos um estado morto
+que serve de destino para todas as arestas faltantes.
+
 = Exemplo
 
 #stack(
@@ -47,29 +86,115 @@
 
 )
 
-= Semântica Operacional
+= Caminhos
 
+Um autômato reconhece uma palavra $w$ se existe um caminho
+rotulado por $w$, que leva de um estado inicial para um final.
+Para formalizar estes conceitos,
+precisamos definir uma estrutura de dados para os caminhos,
+assim como funções que calculam o início e fim de um caminho,
+assim como o seu rótulo.
+
+Uma ferramenta poderosa para isso são os #emph[tipos algébricos].
+Esta técnica, mais comum em linguagems de programação funcionais,
+é uma boa maneira de representar tipos que tem mais de um "caso",
+assim como funções recursivas sobre estes tipos.
+
+#let pathnil(x) = $#x!$
+#let pathcons(x,a,p) = $#x attach(→, t:#a) #p$
+
+#let ini = $"ini"$
+#let fin = $"fin"$
+#let lab = $"lab"$
+#let ars = $"ars"$
+
+Por exemplo, $pathcons(X, a, pathcons(Y, b, pathnil(Z)))$ é um caminho de $X$ até 
+
+Um #emph[caminho] tem duas possíveis formas:
+1. $pathnil(q)$ é um caminho vazio, que começa e termina em $q$.
+2. $pathcons(x,a,p)$
+    é um caminho que começa $x$,
+    passa por uma aresta rotulada por $a$,
+    e continua pelo sub-caminho $p$.
+
+As seguintes funções calculam
+o estado inicial,
+o estado final,
+a string percorrida,
+e o conjunto de arestas.
+
+#grid(
+    columns: (50%, 50%),
+    row-gutter: 2em,
+
+    $
+    &ini(pathnil(q)) &&= q \
+    &ini(pathcons(q,a,P)) &&= q \
+    $,
+
+    $
+    &fin(pathnil(q)) &&= q \
+    &fin(pathcons(q,a,P)) &&= fin(P) \
+    $,
+
+    $
+    &lab(pathnil(q)) &&= ε \
+    &lab(pathcons(q,a,P)) &&= a · lab(P) \
+    $,
+
+    $
+    &ars(pathnil(q)) &&= {} \
+    &ars(pathcons(q,a,P)) &&= {(q, a, ini(P))} ∪ ars(P) \
+    $,
+)
+
+Dizemos que o autômato $cal(A)=(Σ,Q,q_0,F,δ)$ reconhece a palavra $w$
+se existe um caminho $p$ que leva do estado inicial para um final,
+passando por $w$. Isto é:
+- $lab(p) = w$
+- $ini(p) = q_0$
+- $fin(p) ∈ F$
+- $ars(p) ⊆ δ$
+
+= Semânticas Operacional Big-Step
 
 #let bigstep(X, w) = $#X ⇓ #w$
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
 
 Vamos usar uma semântica _big step_.
 
-#stack(
-    dir:ltr,
-    spacing: 20pt,
+A especificação formal baseada em caminhos tem a vantagem
+de que é fácil explicar o que é um caminho, e desenhar um caminho.
+No entanto, ela tem algumas desvantagens na hora de usá-la para 
+escrever provas matemáticas.
+A raiz do problema é que a estrutura de dados do caminho não
+restringe o caminho para somente os caminhos adequados.
+Portanto, a especificação precisa de um certo malabarismo 
+entre o caminho e as quatro funções $lab$, $ini$, $fin$, e $ars$.
+
+Nesta seção vamos apresentar uma formulação alternativa
+da semântica de um autômato, que especifica diretamente
+o que é um caminho adequado. 
+A relação $bigstep(q, w)$ significa que existe um caminho adequado
+que leva de $q$ para um estado final, passando por $w$.
+
+#grid(
+    columns:(50%, 50%),
+    align:center,
 
     proof-tree(
         rule(
             $bigstep(X, ε)$,
-            [$X$ é final]
+            //--------------
+            $X ∈ F$
         )
     ),
 
     proof-tree(
         rule(
             $bigstep(X, a v)$,
-            $step(X, a, Y)$,
+            //--------------
+            $(X,a,Y) ∈ δ$,
             $bigstep(Y, v)$,
         )
     ),
@@ -77,9 +202,107 @@ Vamos usar uma semântica _big step_.
 
 Por extenso:
 
-1. Estados finais reconhecem a palavra vazia
-2. Se existe uma aresta "a" de $X$ para $Y$, e $Y$ reconhece $v$, então $X$ reconhece $a v$.
-3. Estados não reconhecem palavras além das descritas pelas regras acima.
+1. Se $X$ é um estado final, então ele reconhece a palavra vazia
+2. Se existe uma aresta de $step(X,a,Y)$,
+   e $Y$ reconhece $v$, então $X$ reconhece $a v$.
+3. Estados só reconhecem palavras descritas pelas regras acima.
+
+#definition("Linguagem aceita por um AFD")[$L(cal(A)) = {w | bigstep(q_0, w)}$]
+
+
+    #lemma[
+    Se $bigstep(X, w)$, então existe um caminho adequado $P$ com $lab(P)=w$.
+]
+#proof[
+    A prova é por indução estrutural na evidência de $bigstep(X, w)$.
+    Em cada caso, precisamos apresentar um $P$ tal que
+    - $ini(P) = X$
+    - $fin(P) ∈ F$
+    - $lab(P) = ε$
+    - $ars(P) = δ$
+
+    Caso base: $(X ∈ F) / bigstep(X, ε)$
+
+    Escolha $P=pathnil(X)$. temos
+
+    $
+    ini(pathnil(X)) &= X \
+    fin(pathnil(X)) &= X ∈ F \
+    lab(pathnil(X)) &= ε  \
+    ars(pathnil(X)) &= {} ⊆ δ \
+    $
+    
+    Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
+
+    Aplicando a hipótese de indução em $bigstep(Y, w')$,
+    sabemos que existe $p'$ tal que 
+    $ini(p') = Y$, 
+    $fin(p') ∈ F$
+    $lab(p') = w'$
+    $ars(p') = δ$
+
+    Escolha $P=pathcons(X,a, p')$. Temos
+    $
+    ini(pathcons(X,a, p')) &= X \
+    fin(pathcons(X,a, p')) &= fin(p') ∈ F \
+    lab(pathcons(X,a, p')) &= a •lab(p') = a · w' \
+    ars(pathcons(X,a, p')) &= {(X,a,Y)} ∪ ars(p') ⊆ δ \
+    $
+]
+
+#lemma[
+    Se $P$ é um caminho adequado, então $bigstep(ini(P), lab(P))$.
+]
+#proof[
+    Por indução estrutural no caminho $P$.
+    Em cada caso podemos assumir
+    $
+    ini(P) &= X \
+    fin(P) &∈ F \
+    lab(P) &= ε  \
+    ars(P) &⊆ δ \
+    $
+    e temos que provar $bigstep(ini(P), lab(P))$
+
+    Caso base: $P=pathnil(X)$
+
+    Temos $ini(pathnil(X)) = fin(pathnil(X)) = X$ e
+    $lab(pathnil(X))=ε$.
+    Pela hipótese podemos assumir $X∈F$
+    e com base nisso construir evidência de $bigstep(X, ε)$.
+
+    #proof-tree(
+        rule(
+            $bigstep(X, ε)$,
+            //----
+            $X ∈ F$,
+        )
+    )
+
+    Caso indutivo: $P=pathcons(X, a, P')$
+
+    Como $P$ é adequado, $P'$ também o é.
+    Portanto, podemos aplicar a hipótese de indução
+    e concluir que $bigstep(ini(P'), lab(P'))$.
+    
+    Temos $ars(P) = ars(pathcons(X, a, P')) = {(X, a, ini(P'))} ∪ ars(P')$.
+    Pela hipótese, $ars(P) ⊆ δ$ e portanto $(X, a, ini(P')) ∈ δ$.
+
+    Juntando essas duas partes, podemos concluir 
+
+    #proof-tree(
+        rule(
+            $bigstep(X, a · lab(P'))$,
+            //----
+            $(X, a, ini(P')) ∈ δ$,
+            $bigstep(ini(P'), lab(P'))$,
+        )
+    )
+
+    O que é exatamente o que precisamos,
+    pois $ini(P) = X$ e $lab(P) = a · lab(P')$.
+]
+   
 
 #let dmult = $attach(=>, tr:*)$
 
@@ -263,12 +486,17 @@ A culpa disso está no $X=X$ da equação,
 que ocorre quando o conjunto $A$ contém a palavra vazia.
 (O que corresponde a um loop vazio no autômato)
 
+Como vimos anteriormente, a menor solução 
+está refletida nos termos $A^i B$ daqueles somatórios.
+Intuitivamente, a maneira obter uma solução diferente de $A^* B$
+é que a solução contenha strings oriundas do $A^n · X$.
+
 #lemma[
     Se $X ⊆ A X ∪ B$, então
     $forall n. (X ⊆ A^(n+1) X ∪ (union.big_(i=0)^(n) A^i B))$
 ] <thm:arden-length>
 #proof[
-    Por indução em $n$.
+    Como é de praxe, seguimos por indução em $n$.
 
     #emph[Caso base:] $n=0$
 
@@ -296,8 +524,8 @@ que ocorre quando o conjunto $A$ contém a palavra vazia.
    Seja $w$ uma palavra pertencente a $X$,
    e seja $abs(w)$ o seu comprimento.
    Pelo @thm:arden-greatest, deduzimos que $w ∈  A^(abs(w)+1) X ∪ (union.big_(i=0)^(abs(w)) A^i B)$.
-   Como $A$ só contém palavras com comprimento maior ou igual a 1,
-   o conjunto $A^(abs(w)+1) X$ só contém palavras com comprimento pelo menos $abs(w)+1$.
+   Mas repare que $A$ só contém palavras com comprimento maior ou igual a 1,
+   e portanto o conjunto $A^(abs(w)+1) X$ só contém palavras com comprimento pelo menos $abs(w)+1$.
    Desta forma, não é possível que $w$ pertença a $A^(abs(w)+1) X$ e necessariamente temos
    $w ∈ (union.big_(i=0)^(abs(w)) A^i B) ⊆ A^* B$.
 ]
