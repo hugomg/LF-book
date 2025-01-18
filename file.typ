@@ -20,8 +20,12 @@
 )
 
 #set heading(numbering: "1.")
+
 #show raw: set text(font: "New Computer Modern Mono")
+
 #show heading: set block(above: 1.4em, below: 1em)
+#show heading.where(depth:1): body => { pagebreak(weak: true); body}
+
 
 #let theorem    = thmplain("teorema", "Teorema", titlefmt: strong)
 #let lemma      = thmplain("lema", "Lema", titlefmt: strong)
@@ -30,6 +34,9 @@
 #let corollary  = thmplain("corolário", "Corolário", base: "theorem", titlefmt: strong)
 #let example    = thmplain("examplo", "Examplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
+
+//=================================================
+
 
 = Autômatos Finitos
 
@@ -98,33 +105,39 @@ precisamos definir uma estrutura de dados para os caminhos,
 assim como funções que calculam o início e fim de um caminho,
 assim como o seu rótulo.
 
-Uma ferramenta poderosa para isso são os #emph[tipos algébricos].
-Esta técnica, mais comum em linguagems de programação funcionais,
-é uma boa maneira de representar tipos que tem mais de um "caso",
-assim como funções recursivas sobre estes tipos.
-
+#let arr(a) = $attach(→, t:#a)$
 #let pathnil(x) = $#x!$
-#let pathcons(x,a,p) = $#x attach(→, t:#a) #p$
+#let pathcons(x,a,p) = $#x arr(#a) #p$
 
 #let ini = $"ini"$
 #let fin = $"fin"$
 #let lab = $"lab"$
 #let ars = $"ars"$
 
-Por exemplo, $pathcons(X, a, pathcons(Y, b, pathnil(Z)))$ é um caminho de $X$ até 
+Alguns exemplos de caminho:
 
-Um #emph[caminho] tem duas possíveis formas:
+- $pathcons(E, a, pathcons(A, a, pathnil(X)))$
+- $pathcons(E, b, pathcons(B, b, pathnil(X)))$
+- $pathcons(E, a, pathcons(A, b, pathcons(E, a, pathcons(A, a, pathnil(X)))))$
+
+
+Para formalizar o que é um caminho,
+iremos apresentar uma definição indutiva.
+Esta técnica nos permite escrever funções recursivas sobre caminhos,
+assim como provas por indução sobre os caminhos. 
+Em suma, um *caminho* tem duas possíveis formas:
+
 1. $pathnil(q)$ é um caminho vazio, que começa e termina em $q$.
 2. $pathcons(x,a,p)$
-    é um caminho que começa $x$,
+    é um caminho que começa em $x$,
     passa por uma aresta rotulada por $a$,
     e continua pelo sub-caminho $p$.
 
-As seguintes funções calculam
+As seguintes funções recursivas calculam, respectivamente:
 o estado inicial,
 o estado final,
 a string percorrida,
-e o conjunto de arestas.
+e o conjunto de arestas percorridas.
 
 #grid(
     columns: (50%, 50%),
@@ -151,11 +164,13 @@ e o conjunto de arestas.
     $,
 )
 
-Dizemos que o autômato $cal(A)=(Σ,Q,q_0,F,δ)$ reconhece a palavra $w$
-se existe um caminho $p$ que leva do estado inicial para um final,
-passando por $w$. Isto é:
+Agora estamos prontos para usar esta definição para especificar
+a linguagem reconhecida por um autômato.
+Dado um autômato $cal(A)=(Σ,Q,q_0,F,δ)$,
+dizemos que ele reconhece a palavra $w$ se existe um caminho $p$
+que leva do estado inicial para um final, passando por $w$. Isto é:
 - $lab(p) = w$
-- $ini(p) = q_0$
+- $ini(p) ∈ S$
 - $fin(p) ∈ F$
 - $ars(p) ⊆ δ$
 
@@ -164,21 +179,18 @@ passando por $w$. Isto é:
 #let bigstep(X, w) = $#X ⇓ #w$
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
 
-Vamos usar uma semântica _big step_.
-
 A especificação formal baseada em caminhos tem a vantagem
-de que é fácil explicar o que é um caminho, e desenhar um caminho.
-No entanto, ela tem algumas desvantagens na hora de usá-la para 
-escrever provas matemáticas.
+de que é fácil visualizar os caminhos,
+porém pode ser inconveniente na hora de escrever provas matemáticas.
 A raiz do problema é que a estrutura de dados do caminho não
-restringe o caminho para somente os caminhos adequados.
-Portanto, a especificação precisa de um certo malabarismo 
-entre o caminho e as quatro funções $lab$, $ini$, $fin$, e $ars$.
+tem nada que impeça a criação de um caminho espúrio,
+que não tem nada a ver com o autômato.
+O resultado disso é que a especificação, além do caminho em si,
+também usa uma série de predicados baseados em $lab$, $ini$, $fin$, e $ars$.
 
-Nesta seção vamos apresentar uma formulação alternativa
-da semântica de um autômato, que especifica diretamente
-o que é um caminho adequado. 
-A relação $bigstep(q, w)$ significa que existe um caminho adequado
+Nesta seção vamos apresentar uma formulação alternativa da semântica de um autômato,
+que especifica diretamente o que é um caminho adequado. 
+A relação $bigstep(q, w)$ codifica que existe um caminho adequado
 que leva de $q$ para um estado final, passando por $w$.
 
 #grid(
@@ -203,6 +215,9 @@ que leva de $q$ para um estado final, passando por $w$.
     ),
 )
 
+A maneira de ler esta notação de _dedução natural_
+é que a parte acima da barra lista as premissas,
+e a parte de baixo mostra a conclusão.
 Por extenso:
 
 1. Se $X$ é um estado final, então ele reconhece a palavra vazia
@@ -213,66 +228,84 @@ Por extenso:
 #definition("Linguagem aceita por um AFD")[$L(cal(A)) = {w | bigstep(q_0, w)}$]
 
 
-    #lemma[
-    Se $bigstep(X, w)$, então existe um caminho adequado $P$ com $lab(P)=w$.
+#lemma[
+    $L_(⇓)(cal(A)) ⊆ L_(P)(cal(A))$. Isto é, se $bigstep(X, w)$, então existe $p$ com
+    - $ini(p) = X$,
+    - $fin(p) ∈ F$,
+    - $lab(p) = ε$,
+    - $ars(p) = δ$.
 ]
 #proof[
-    A prova é por indução estrutural na evidência de $bigstep(X, w)$.
-    Em cada caso, precisamos apresentar um $P$ tal que
-    - $ini(P) = X$
-    - $fin(P) ∈ F$
-    - $lab(P) = ε$
-    - $ars(P) = δ$
+    
+    Basicamente, temos que apresentar um procedimento que recebe uma
+    evidência de $w ∈ L_(⇓)(cal(A))$ e produz uma evidência de $w ∈ L_(P)(cal(A))$.
+    A prova é por indução estrutural na evidência $bigstep(X, w)$,
+    e tem a cara de uma função recursiva que recebe a derivação de $bigstep(X, w)$,
+    e deve produzir um caminho $P$, junto com evidência de que $P$ é um caminho
+    apropriado, que reconhece $w$.
 
     / Caso base: $(X ∈ F) / bigstep(X, ε)$
 
-    Escolha $P=pathnil(X)$. temos
+    A evidência que recebemos contém uma sub-evidência de que $X ∈ F$.
+    Poderemos usar este fato mais em frente.
+    (By the way, este empacotamento de sub-evidências é o principal atrativo)
+
+    Cada caso tem que apresentar um caminho e provar que ele é adequado.
+    Para o caso base escolhemos $P=pathnil(X)$.
+    Continuamos aplicando as definições de $ini, fin, lab, ars$:
 
     $
     ini(pathnil(X)) &= X \
-    fin(pathnil(X)) &= X ∈ F \
+    fin(pathnil(X)) &= X \
     lab(pathnil(X)) &= ε  \
-    ars(pathnil(X)) &= {} ⊆ δ \
+    ars(pathnil(X)) &= {} \
     $
+
+    Como o conjunto vazio está contido em qualquer outro conjunto, temos $ars(P) ⊆ δ$.
+    Além disso, vimos antes que $X ∈ F$ e portanto $fin(P) ⊆ F$.
+    Portanto, $P$ é um caminho que leva de $X$ a um estado final, lendo a string $w=ε$.
     
     / Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
 
+    Desta vez, as sub-evidências que recevemos são uma evidência de que
+    a aresta $(X,a,Y)$ pertence ao autômato, e que $bigstep(Y, w')$.
     Aplicando a hipótese de indução em $bigstep(Y, w')$,
-    sabemos que existe $p'$ tal que 
+    como se fosse uma chamada recursiva,
+    concluimos que existe um caminho $p'$ que reconhece $w'$ a partir de $Y$:
     $ini(p') = Y$, 
-    $fin(p') ∈ F$
-    $lab(p') = w'$
-    $ars(p') = δ$
+    $fin(p') ∈ F$,
+    $lab(p') = w'$,
+    $ars(p') = δ$.
 
-    Escolha $P=pathcons(X,a, p')$. Temos
+    Agora temos que usar essas peças
+    para construir um caminho que reconhece $a · w'$ saíndo de arr($X$).
+    Vamos escolher o caminho $P=pathcons(X,a, p')$. Temos
     $
     ini(pathcons(X,a, p')) &= X \
-    fin(pathcons(X,a, p')) &= fin(p') ∈ F \
-    lab(pathcons(X,a, p')) &= a •lab(p') = a · w' \
-    ars(pathcons(X,a, p')) &= {(X,a,Y)} ∪ ars(p') ⊆ δ \
+    fin(pathcons(X,a, p')) &= fin(p')\
+    lab(pathcons(X,a, p')) &= a •lab(p')\
+    ars(pathcons(X,a, p')) &= {(X,a,Y)} ∪ ars(p')\
     $
+
+    Juntando isso com a hipótese de indução,
+    podemos concluir que $fin(P) = fin(P') ⊆ F$,
+    e que $lab(P) = a · w'$.
+    Por último, $ars(P) ⊆ δ$ segue de $(X,a,Y) ∈ δ$ e de $ars(p') ⊆ δ$.
 ]
 
 #lemma[
-    Se $P$ é um caminho adequado, então $bigstep(ini(P), lab(P))$.
+    $L_(P)(cal(A)) ⊆ L_(⇓)(cal(A))$.
+    Isto é, $p$ é um caminho que reconhece $w=lab(P)$, saíndo de $X=ini(P)$,
+    então $bigstep(ini(P), lab(P))$.
 ]
 #proof[
-    Por indução estrutural no caminho $P$.
-    Em cada caso podemos assumir
-    $
-    ini(P) &= X \
-    fin(P) &∈ F \
-    lab(P) &= ε  \
-    ars(P) &⊆ δ \
-    $
-    e temos que provar $bigstep(ini(P), lab(P))$
+    Desta vez a prova é por indução no caminho $P$.
+    
+    / Caso base: $P=pathnil(X)$
 
-    Caso base: $P=pathnil(X)$
-
-    Temos $ini(pathnil(X)) = fin(pathnil(X)) = X$ e
-    $lab(pathnil(X))=ε$.
-    Pela hipótese podemos assumir $X∈F$
-    e com base nisso construir evidência de $bigstep(X, ε)$.
+    Por definição, $ini(pathnil(X)) = fin(pathnil(X)) = X$ e $lab(pathnil(X))=ε$.
+    Pela hipótese podemos assumir $ini(P)∈F$,
+    que é a premissa necessária para construir evidência de $bigstep(X, ε)$.
 
     #proof-tree(
         rule(
@@ -282,16 +315,15 @@ Por extenso:
         )
     )
 
-    Caso indutivo: $P=pathcons(X, a, P')$
+    / Caso indutivo: $P=pathcons(X, a, P')$
 
-    Como $P$ é adequado, $P'$ também o é.
-    Portanto, podemos aplicar a hipótese de indução
-    e concluir que $bigstep(ini(P'), lab(P'))$.
-    
-    Temos $ars(P) = ars(pathcons(X, a, P')) = {(X, a, ini(P'))} ∪ ars(P')$.
-    Pela hipótese, $ars(P) ⊆ δ$ e portanto $(X, a, ini(P')) ∈ δ$.
-
-    Juntando essas duas partes, podemos concluir 
+    Pela nossa premissa, sabemos que $fin(P) ∈ F$, e $ars(P) ⊆ δ$.
+    Aplicando as definições, temos
+    $ini(P) = X$,
+    $fin(P) = fin(P')$,
+    $lab(P) = a · lab(P')$,
+    $ars(P) = {(X, a, ini(P'))} ∪ ars(P')$.
+    Com isso, queremos obter evidência de $bigstep(X, a · lab(P'))$:
 
     #proof-tree(
         rule(
@@ -302,18 +334,143 @@ Por extenso:
         )
     )
 
-    O que é exatamente o que precisamos,
-    pois $ini(P) = X$ e $lab(P) = a · lab(P')$.
+
+    Para tal precisamos de uma evidência de que $bigstep(ini(P'), lab(P'))$.
+    Dá vontade de aplicar a hipótese de indução sobre $P'$, porém ainda não podemos!
+    A nossa premissa nos premite assumir que $P$ reconhece $w$,
+    mas não diz nada sobre $P'$.
+    Antes de aplicar a hipótese de indução,
+    temos que reconstruir a evidência de que $P'$ é um caminho adequado.
+    Isto é, $fin(P') ∈ F$ e $ars(P') ⊆ δ$.
+    (Esta complicação é exatamente o motivo pelo qual introduzimos a relação $⇓$.
+     A vida fica mais tranquilo quando a evidência contém as sub-evidências).
+
+    A primeira condição segue da premissa $fin(P) ∈ F$, junto com o $fin(P) = fin(P')$.
+    A segunda condição segue da premissa $ars(P) ⊆ δ$,
+    que também permite concluir  $(X, a, ini(P')) ∈ δ$.
+
+    Chegamos na reta final. Aplicando a hipótese de indução em $P'$,
+    obtemos uma evidência de que $bigstep(ini(P'), lab(P'))$,
+    e com isso podemos construir a evidência de que $bigstep(ini(P), lab(P))$.
 ]
    
+= Semântica operacional small-step
 
 #let dmult = $attach(=>, tr:*)$
 
-Obs.: Derivações com $dmult$ seriam uma semântica small-step,
-e poderíamos provar #box[$(bigstep(X, w)) <=> (X dmult w)$].
-A diferença crucial é que no big step
-a string $w$ só contém string com letras do alfabeto,
-enquanto nas derivações também poderia conter variáveis.
+Uma outra semântica baseada na ideia de derivações de gramáticas.
+
+#grid(
+    columns:(33%,33%,33%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $X => ε$,
+            //--------------
+            $X ∈ F$
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $X => a Y$,
+            //--------------
+            $(X,a,Y) ∈ δ$,
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $u w v => u w' v$,
+            //--------------
+            $w => w'$,
+        )
+    ),
+)
+
+Exemplo:
+
+$
+  "E" => "aA" => "abE" => "abbB" => "abbbX" => "abbb"
+$
+
+Precisamos também de uma relação que capture a ideia de "zero ou mais passos".
+
+$
+  "E" dmult "abbb"
+$
+
+Esta relação é o fecho reflexivo e transitivo de $=>$.
+
+#grid(
+    columns:(33%,33%,33%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $X dmult X$,
+            $$
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $X dmult Y$,
+            //--------------
+            $X => Y$,
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $X dmult Z$,
+            //--------------
+            $X dmult Y$,
+            $Y dmult Z$,
+        )
+    ),
+)
+
+Outra maneira:
+
+#grid(
+    columns:(33%,33%,33%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $X dmult X$,
+            $$
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $X dmult Z$,
+            //--------------
+            $X => Y$,
+            $Y dmult Z$,
+        )
+    ),
+)
+
+
+Obs.: 
+A semântica baseada em $⇓$ é o que chamamos de _big step_.
+Ela relaciona um estado diretamente com o resultado final, que é uma string de $Σ^*$.
+Já a semântica com $=>$ é _small step_.
+A relação captura um passo de cada vez.
+Repare que o lado direito da seta pode conter nomes de estado,
+além de caracteres do alfabeto $Σ$.
+
+Estas duas abordagens tem seus prós e contras.
+Semânticas big-step comumente resultam em provas mais simples,
+pois a definição indutiva da relação tem menos regras.
+A semântica small-step tem a vantagem da notação ser mais horizontal.
+Também está mais bem equipadas para lidar com loops/caminhos infinitos.
+(Nós combinamos  de deixar as strings infinitas de fora das nossas linguagens,
+mas essa questão do loop infinito aparece comumente em outros contextos.)
 
 = Semântica Denotacional
 
