@@ -7,6 +7,7 @@
 
 #set page(
     margin: 1.25in,
+    numbering: "1",
 )
 #set par(
     //leading: 0.55em,
@@ -79,22 +80,6 @@ obs.: Algumas apresentações de AFD exigem que
 a função de transição seja total.
 Dá pra fazer isso se introduzirmos um estado morto
 que serve de destino para todas as arestas faltantes.
-
-= Exemplo
-
-#stack(
-    dir:ltr,
-    spacing: 20pt,
-
-    [Tudo aqui é sobre esse autômato para a linguagem $a^*$:],
-
-    ```
-        a
-       ⤺
-    --> X -->
-    ```,
-
-)
 
 = Caminhos
 
@@ -174,7 +159,7 @@ que leva do estado inicial para um final, passando por $w$. Isto é:
 - $fin(p) ∈ F$
 - $ars(p) ⊆ δ$
 
-= Semânticas Operacional Big-Step
+= Semântica operacional big-step
 
 #let bigstep(X, w) = $#X ⇓ #w$
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
@@ -474,14 +459,17 @@ mas essa questão do loop infinito aparece comumente em outros contextos.)
 
 = Semântica Denotacional
 
+Vou fazer as provas para este autômato específico.
+#image("imgs/bb.dot.svg")
+
 #let den(x) = $⟦#x⟧$
 
 Queremos encontrar a menor solução para o sistema
 $den(X) = {ε} ∪ a · den(X)$.
 
-Mais formalmente, o menor ponto fixo do operador $F(X) = {ε} ∪ a · X$
+Mais formalmente, o menor ponto fixo do operador $f(X) = {ε} ∪ a · X$
 
-= Prova de que é ponto fixo
+== Prova de que é ponto fixo
 
 Para provar que a semântica operacional casa com a denotacional,
 o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
@@ -490,7 +478,7 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 #block(breakable:false)[
 
     #theorem[
-        $F({w | bigstep(X, w)}) = {w | bigstep(X, w)}$
+        $f({w | bigstep(X, w)}) = {w | bigstep(X, w)}$
     ]
     #proof[
         Um caminho do estado $X$ até um estado final tem duas formas possíveis.
@@ -510,7 +498,7 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 ]
 
 
-= Prova de que é o menor ponto fixo
+== Prova de que é o menor ponto fixo
 
 #block(breakable:false)[
     #let lfp=$μ F$
@@ -542,7 +530,7 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
         $
             & ε ∈ R \
             & <=> #[($R$ é ponto fixo)] \
-            & ε ∈ (ε} ∪ a · R \
+            & ε ∈ ({ε} ∪ a · R) \
             & ⇐ \
             & e ∈ {ε} \
 
@@ -555,10 +543,10 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
         $
             & a v ∈ R \
             & <=> "(R é ponto fixo)" \
-            & a v ∈ (ε} ∪ {a} · R \
+            & a v ∈ ({ε} ∪ a · R) \
             & ⇐ \
-            & a v ∈ {a} · R \
-            & ⇐ #[(definição de concatenação)]\
+            & a v ∈ a · R \
+            & ⇐ \
             & v ∈ R
         $
     ]
@@ -566,9 +554,6 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 
 
 = Lema de Arden
-
-
-
 
 #lemma[
     $A^*B$ é solução da equação $X = A X ∪ B$.
@@ -620,7 +605,7 @@ A prova formal é por indução no número de repetições da estrela de Kleene.
     Portanto, $A^n B ⊆ A X ⊆ A X ∪ B ⊆ X$.
 ]
 
-Finalmente, concluímos a prova.
+Finalmente, provamos o lema de Arden propriamente dito.
 
 #theorem("Lema de Arden")[
     $A^*B$ é a menor solução de $X = A X ∪ B$.
@@ -647,16 +632,16 @@ que ocorre quando o conjunto $A$ contém a palavra vazia.
 (O que corresponde a um loop vazio no autômato)
 
 Como vimos anteriormente, a menor solução 
-está refletida nos termos $A^i B$ daqueles somatórios.
-Intuitivamente, a maneira obter uma solução diferente de $A^* B$
-é que a solução contenha strings oriundas do $A^n · X$.
+advem dos termos $A^i B$ daqueles somatórios.
+Intuitivamente, para obter uma solução diferente de $A^* B$
+esta solução deve conter strings oriundas do termo $A^n X$.
 
 #lemma[
     Se $X ⊆ A X ∪ B$, então
     $forall n. (X ⊆ A^(n+1) X ∪ (union.big_(i=0)^(n) A^i B))$
 ] <thm:arden-length>
 #proof[
-    Como é de praxe, seguimos por indução em $n$.
+    Por indução em $n$. (Quem diria...)
 
     #emph[Caso base:] $n=0$
 
