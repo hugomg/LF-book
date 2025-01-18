@@ -343,7 +343,7 @@ Por extenso:
 
 #let dmult = $attach(=>, tr:*)$
 
-Uma outra semântica baseada na ideia de derivações de gramáticas.
+Uma semântica baseada na ideia de derivações de gramáticas.
 
 #grid(
     columns:(33%,33%,33%),
@@ -377,13 +377,13 @@ Uma outra semântica baseada na ideia de derivações de gramáticas.
 Exemplo:
 
 $
-  "E" => "aA" => "abE" => "abbB" => "abbbX" => "abbb"
+  " E" => "aA" => "abE" => "abbB" => "abbbX" => "abbb"
 $
 
 Precisamos também de uma relação que capture a ideia de "zero ou mais passos".
 
 $
-  "E" dmult "abbb"
+  " E" dmult "abbb"
 $
 
 Esta relação é o fecho reflexivo e transitivo de $=>$.
@@ -636,12 +636,14 @@ advem dos termos $A^i B$ daqueles somatórios.
 Intuitivamente, para obter uma solução diferente de $A^* B$
 esta solução deve conter strings oriundas do termo $A^n X$.
 
+Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
+
 #lemma[
     Se $X ⊆ A X ∪ B$, então
-    $forall n. (X ⊆ A^(n+1) X ∪ (union.big_(i=0)^(n) A^i B))$
+    $forall n ≥ 0. (X ⊆ A^(n+1) X ∪ (union.big_(i=0)^(n) A^i B))$
 ] <thm:arden-length>
 #proof[
-    Por indução em $n$. (Quem diria...)
+    Como sempre, indução em $n$.
 
     #emph[Caso base:] $n=0$
 
@@ -660,25 +662,26 @@ esta solução deve conter strings oriundas do termo $A^n X$.
     $
 ]
 
+Usamos este lema para mostrar que, se $A$ não contém a palavra vazia,
+então todas as soluções do sistema estão dentro de $A^*B$.
+
 #lemma[
     Se $ε ∉ A$, e $X ⊆ A X ∪ B$,
     então $X ⊆ A^*B$.
 ] <thm:arden-greatest>
 
 #proof[
-   Seja $w$ uma palavra pertencente a $X$,
+   Seja $w$ uma palavra de $X$,
    e seja $abs(w)$ o seu comprimento.
    Pelo @thm:arden-greatest, deduzimos que $w ∈  A^(abs(w)+1) X ∪ (union.big_(i=0)^(abs(w)) A^i B)$.
-   Mas repare que $A$ só contém palavras com comprimento maior ou igual a 1,
-   e portanto o conjunto $A^(abs(w)+1) X$ só contém palavras com comprimento pelo menos $abs(w)+1$.
-   Desta forma, não é possível que $w$ pertença a $A^(abs(w)+1) X$ e necessariamente temos
-   $w ∈ (union.big_(i=0)^(abs(w)) A^i B) ⊆ A^* B$.
+   Mas repare que $ε ∉ A$.
+   Portanto, $A$ só contém palavras com comprimento maior ou igual a 1,
+   e $A^(abs(w)+1) X$ só contém palavras com comprimento pelo menos $abs(w)+1$.
+   Assim, não é possível que $w$ pertença a $A^(abs(w)+1) X$.
+   Necessariamente temos $w ∈ (union.big_(i=0)^(abs(w)) A^i B) ⊆ A^* B$.
 ]
 
-Finalmente,
-com a condição adicional de que $ε ∉ A$,
-podemos escrever uma segunda versão do lema de Arden
-que garante que a solução é única:
+Finalmente, podemos enunciar a versão tradicional do lema de Arden.
 
 #theorem[
     Se $ε ∉ A$, e $X = A X ∪ B$,
