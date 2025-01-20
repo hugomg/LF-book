@@ -1,0 +1,6 @@
+state X A B C
+start X
+
+X A a
+X B b
+X C c

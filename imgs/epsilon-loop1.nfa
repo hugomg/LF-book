@@ -1,0 +1,5 @@
+state X B
+start X
+
+X X ε
+X B a

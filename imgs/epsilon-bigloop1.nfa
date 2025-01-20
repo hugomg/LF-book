@@ -1,0 +1,10 @@
+state X Y Z A B C
+start X
+
+X A a
+Y B b
+Z C c
+
+X Y ε
+Y Z ε
+Z X ε

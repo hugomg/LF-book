@@ -62,14 +62,14 @@ em um estado de $S$ e terminam em algum estado de $F$.
 
 Uma aresta é uma tripla da forma $(Q × Σ × Q)$.
 O conjunto $Δ$ descreve uma relação de transição entre estados.
-Pense em uma tabela de um banco de dados relacional,
-em que as linhas são as arestas,
-e as colunas são o estado de origem, o estado de destino, e o caractere.
+Pense em uma tabela de um banco de dados relacional, em que as colunas são
+o estado de origem, o rótulo da aresta, e o estado de destino.
 
-Um *Autômato Finito Determinístico (AFD)*
-tem um único estado inicial,
-e o conjunto de arestas é uma função parcial de $X$ e $a$:
-dados $X$ e $a$, existe no máximo um $Y$ tal que $(X,a,Y) ∈ Δ$.
+Um *Autômato Finito Determinístico (AFD)* tem um único estado inicial,
+para cada estado de origem $X$ e e cada rótulo $a$,
+existe no máximo uma aresta rotulada por $a$ que sai de $X$.
+Podemos enxegar a relação de transição como uma _função de transição_.
+Especificamente, uma função parcial que mapeia $(X,a)$ para o estado de destino $Y$.
 
 Um *Autômato Finito Não-Determinístico (AFND)*
 não tem estas restrições.
@@ -222,12 +222,13 @@ Por extenso:
 ]
 #proof[
     
-    Basicamente, temos que apresentar um procedimento que recebe uma
-    evidência de $w ∈ L_(⇓)(cal(A))$ e produz uma evidência de $w ∈ L_(P)(cal(A))$.
+    Construímos um procedimento que
+    recebe uma evidência de $w ∈ L_(⇓)(cal(A))$
+    e produz uma evidência de $w ∈ L_(P)(cal(A))$.
     A prova é por indução estrutural na evidência $bigstep(X, w)$,
     e tem a cara de uma função recursiva que recebe a derivação de $bigstep(X, w)$,
-    e deve produzir um caminho $P$, junto com evidência de que $P$ é um caminho
-    apropriado, que reconhece $w$.
+    e produz um caminho $P$, junto com evidência de que $P$ é um caminho
+    apropriado, que reconhece $w$ levando $X$ a um estado final.
 
     / Caso base: $(X ∈ F) / bigstep(X, ε)$
 
@@ -701,7 +702,163 @@ Essa escolha levaria a um teoria alternativa,
 que trabalharia com maiores pontos fixos ao invés de menores pontos fixos,
 e provas por co-indução ao invés de por indução.
 
+
+/////////////////////
+= Transições vazias
+/////////////////////
+
+O autômato a seguir reconhece a linguagem $a^* b^*$.
+Porém, isso pode não ser tão óbvio...
+
+#image("imgs/epsilon2.dot.svg")
+
+Seria legal se pudesemmos construir um autômato que tem
+uma parte responsável pelo $a^*$ e uma pelo $b^*$.
+Uma ferramenta que possibilita isso são arestas $ε$:
+
+#image("imgs/epsilon1.dot.svg")
+
+Repare que agora, o autômato é a sequência de dois sub-autômatos.
+Temos um único estado final, e cada letra da expressão regular $a^* b^*$
+corresponde a uma única aresta.
+
+== Eliminando transições ε
+
+Transições ε podem permitir uma representação do autômato com menos arestas,
+porém não introduzem nenhum poder adicional.
+Todo autômato com transição $ε$ pode ser reescrito em um autômato equivalente sem $ε$.
+
+$
+  A &= a A ∪ B \
+  B &= b B ∪ ε \
+$
+
+Agora, substituímos a definição de B na equação de A:
+
+$
+  A &= a A ∪ (b B ∪ ε) \
+  B &= b B ∪ ε \
+$
+
+Voilá! Chegamos na versão do autômato sem transição ε.
+Resumidamente, o estado A herdou todas as transições do estado B,
+que pode ser alcançado "de graça" a partir de A.
+
+== Loops ε
+
+
+
+Tome  cuidado com autômatos que tem ciclos de arestas $ε$,
+pois nesses casos a regra da substituição não é suficiente.
+
+
+#image("imgs/epsilon-loop1.dot.svg")
+
+$
+  X &= X + a B \
+$
+
+Quando chegamos nesse ponto, a solução é usar o Lema de Arden.
+
+#image("imgs/epsilon-loop2.dot.svg")
+
+$
+  X &= ε X ∪ a B = (ε^*) a B = a B \
+$
+
+== Remoção de loops ε maiores
+
+#image("imgs/epsilon-bigloop1.dot.svg")
+
+Uma outra situação interessante ocorre quando temos um loop ε com mais de um estado:
+
+$
+  X &= Y + a A \
+  Y &= Z + b B \
+  Z &= X + c C \
+$
+
+Podemos aplicar a substituição várias vezes até fechar o ciclo:
+
+$
+  X &= a A + b B + Z \
+  Y &= b B + c C + X \
+  Z &= a A + c C + Y \
+$
+
+$
+  X &= a A + b B + c C + X \
+  Y &= a A + b B + c C + Y \
+  Z &= a A + b B + c C + Z \
+$
+
+E em seguida, o lema de Arden remove os auto-ciclos
+
+$
+  X &= a A + b B + c C \
+  Y &= a A + b B + c C \
+  Z &= a A + b B + c C \
+$
+
+Como os estados são equivalentes,
+podemos combiná-los em um estado só:
+
+$
+  X &= a A + b B + c C \
+  Y &= X \
+  Z &= X \
+$
+
+O resultado final é um único estado,
+que contém todas as transições dos estados que participavam daquele loop ε
+
+#image("imgs/epsilon-bigloop2.dot.svg")
+
+== Uma prova de $(a^*)^* = (a^*)$
+
+Esta técnica oferece uma prova elegante de que $(a^*)^* = a^*$
+
+$
+  X = (a^*)^*
+$
+
+$
+  X &= (a^*)X + ε
+$
+
+$
+  X &= Y + ε \
+  Y &= (a^*)X \
+$
+
+$
+  X &= Y + ε \
+  Y &= a Y + X \
+$
+
+$
+  X &= a Y + ε + X \
+  Y &= a Y + ε + Y \
+$
+
+$
+  X &= a Y + ε \
+  Y &= a Y + ε \
+$
+
+$
+  X &= Y \
+  Y &= a^* \
+$
+
+$
+  X &= a^* \
+$
+
+
+/////////////////////
 = Pontos Fixos
+/////////////////////
 
 Como vimos anteriormente, podemos usar sistemas de equações
 para calcular a linguagem de um autômato,
