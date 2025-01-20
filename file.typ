@@ -444,17 +444,17 @@ Outra maneira:
 
 Obs.: 
 A semântica baseada em $⇓$ é o que chamamos de _big step_.
-Ela relaciona um estado diretamente com o resultado final, que é uma string de $Σ^*$.
+Em um pulo só, ela relaciona o estado diretamente com a string final.
 Já a semântica com $=>$ é _small step_.
-A relação captura um passo de cada vez.
-Repare que o lado direito da seta pode conter nomes de estado,
-além de caracteres do alfabeto $Σ$.
+Ela faz vários passinhos até chegar na string final.
+Repare que o lado direito da relação $=>$ pode conter nomes de estado,
+além de caracteres do alfabeto $Σ$. Só vira uma string pura no último passo.
 
 Estas duas abordagens tem seus prós e contras.
 Semânticas big-step comumente resultam em provas mais simples,
 pois a definição indutiva da relação tem menos regras.
 A semântica small-step tem a vantagem da notação ser mais horizontal.
-Também está mais bem equipadas para lidar com loops/caminhos infinitos.
+Também está mais bem equipada para lidar com loops/caminhos infinitos.
 (Nós combinamos  de deixar as strings infinitas de fora das nossas linguagens,
 mas essa questão do loop infinito aparece comumente em outros contextos.)
 
@@ -656,7 +656,7 @@ Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
     #emph[Caso indutivo:] $n≥1$
 
     $
-    X & ⊆ A^n X ∪ (union.big_(i=0)^(n-1) A^i B) \
+    X & ⊆ A^((n-1)+1) X ∪ (union.big_(i=0)^(n-1) A^i B) = A^n X ∪ (union.big_(i=0)^(n-1) A^i B) \
       & ⊆ A^n (A X ∪ B)  ∪ (union.big_(i=0)^(n-1) A^i B) \
       & = A^(n+1) X ∪ A^n B ∪ (union.big_(i=0)^(n-1) A^i B) \
       & = A^(n+1) X ∪ (union.big_(i=0)^n A^i B) \
@@ -694,7 +694,7 @@ Finalmente, podemos enunciar a versão tradicional do lema de Arden.
 
 Curiosidade: O @thm:arden-greatest depende crucialmente das palavras terem comprimento finito.
 Se permitíssemos strings contendo sequências infinitas de caracteres,
-equações como $X = a X$ permitiriam soluções infinitas como $a a a ...$.
+equações como $X = a X$ permitiriam soluções infinitas como "$a a a ...$".
 Nestas notas de aula, nós não permitimos e nem permitiremos estas strings infinitas.
 No entanto, eu queria deixar registrado que existem sim situações
 em que falar de strings infinitas faz sentido.
@@ -976,7 +976,8 @@ dizemos que um valor $x ∈ A$ é:
 
 O seguinte teorema nos diz que para mostrar que um valor é o menor ponto fixo,
 é suficiente mostrar que ele é o menor ponto pré-fixo, pois ambos coincidem.
-Também nos permite usar a notação $lfp(f)$ para se referir ao menor ponto fixo.
+Também nos permite usar a notação $lfp(f)$ para se referir
+tanto para o menor ponto pré-fixo quanto para o menor ponto fixo.
 
 #theorem[
     O menor ponto pré-fixo de uma função monotônica $F$ também é
