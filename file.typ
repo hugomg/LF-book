@@ -1,4 +1,3 @@
-
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: $square$)
 
@@ -94,9 +93,9 @@ assim como o seu rótulo.
 #let pathnil(x) = $#x!$
 #let pathcons(x,a,p) = $#x arr(#a) #p$
 
-#let ini = $"ini"$
-#let fin = $"fin"$
-#let lab = $"lab"$
+#let ini = $"head"$
+#let fin = $"last"$
+#let lab = $"str"$
 #let ars = $"ars"$
 
 Alguns exemplos de caminho:
@@ -106,21 +105,20 @@ Alguns exemplos de caminho:
 - $pathcons(E, a, pathcons(A, b, pathcons(E, a, pathcons(A, a, pathnil(X)))))$
 
 
-Para formalizar o que é um caminho,
-iremos apresentar uma definição indutiva.
+Iremos definir o que é um caminho de forma indutiva.
 Esta técnica nos permite escrever funções recursivas sobre caminhos,
 assim como provas por indução sobre os caminhos. 
-Em suma, um *caminho* tem duas possíveis formas:
+De volta ao ponto, um *caminho* tem duas possíveis formas:
 
-1. $pathnil(q)$ é um caminho vazio, que começa e termina em $q$.
+1. $pathnil(y)$ é um caminho vazio, que começa e termina no vértice $y$.
 2. $pathcons(x,a,p)$
-    é um caminho que começa em $x$,
+    é um caminho que começa no vértice $x$,
     passa por uma aresta rotulada por $a$,
     e continua pelo sub-caminho $p$.
 
 As seguintes funções recursivas calculam, respectivamente:
-o estado inicial,
-o estado final,
+o primeiro estado,
+o último estado,
 a string percorrida,
 e o conjunto de arestas percorridas.
 
@@ -149,11 +147,11 @@ e o conjunto de arestas percorridas.
     $,
 )
 
-Agora estamos prontos para usar esta definição para especificar
+Agora estamos prontos para especificar
 a linguagem reconhecida por um autômato.
-Dado um autômato $cal(A)=(Σ,Q,q_0,F,δ)$,
+Dado um autômato $cal(A)=(Σ,Q,S,F,δ)$,
 dizemos que ele reconhece a palavra $w$ se existe um caminho $p$
-que leva do estado inicial para um final, passando por $w$. Isto é:
+que leva de um estado inicial para um final, passando por $w$. Isto é:
 - $lab(p) = w$
 - $ini(p) ∈ S$
 - $fin(p) ∈ F$
@@ -258,10 +256,13 @@ Por extenso:
     Aplicando a hipótese de indução em $bigstep(Y, w')$,
     como se fosse uma chamada recursiva,
     concluimos que existe um caminho $p'$ que reconhece $w'$ a partir de $Y$:
-    $ini(p') = Y$, 
-    $fin(p') ∈ F$,
-    $lab(p') = w'$,
-    $ars(p') = δ$.
+
+    $
+    ini(p') &= Y \ 
+    fin(p') &∈ F \
+    lab(p') &= w' \
+    ars(p') &= δ \
+    $
 
     Agora temos que usar essas peças
     para construir um caminho que reconhece $a · w'$ saíndo de arr($X$).
@@ -557,7 +558,7 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 = Lema de Arden
 
 #lemma[
-    $A^*B$ é solução da equação $X = A X ∪ B$.
+    $X=A^*B$ é solução da equação $X = A X ∪ B$.
 ] <thm:arden-solution>
 #proof[
     $
@@ -571,7 +572,7 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 ]
 
 
-Agora resta mostrar que $A^*B$ é a menor solução.
+Falta mostrar que $A^*B$ é a menor solução.
 Isto é, qualquer solução $X$ é superconjunto de $A^*B$.
 Um argumento intuitivo é que
 se substituirmos $X$ por $A X ∪ B$ sucessivamente,
@@ -579,13 +580,13 @@ os termos de $A^*B$ vão aparecendo: $A^0 B$, $A^1 B$, $A^2 B$, $...$
 
 $
                                   X &= A^0 X \
-                      A^0 (A X ∪ B) &= A^1 X ∪ A^0 B \
-               A^1(A X ∪ B) ∪ A^0 B &=  A^2 X ∪ A^1 B ∪ A^0 B\
-      A^2 (A X ∪ B) ∪ A^1 B ∪ A^0 B &=  A^3 X ∪ A^2 B ∪ A^1 B ∪ A^0 B\
+                      A^0 (A X ∪ B) &= A^1 X ∪ bold(A^0 B) \
+               A^1(A X ∪ B) ∪ A^0 B &= A^2 X ∪ bold(A^1 B ∪ A^0 B) \
+      A^2 (A X ∪ B) ∪ A^1 B ∪ A^0 B &= A^3 X ∪ bold(A^2 B ∪ A^1 B ∪ A^0 B) \
                                     &...
 $
 
-A prova formal é por indução no número de repetições da estrela de Kleene.
+A prova formal sai por indução no número de repetições da estrela de Kleene.
 
 #lemma[
     Se $A X ∪ B ⊆ X $ então $A^*B ⊆ X$.
@@ -633,9 +634,9 @@ que ocorre quando o conjunto $A$ contém a palavra vazia.
 (O que corresponde a um loop vazio no autômato)
 
 Como vimos anteriormente, a menor solução 
-advem dos termos $A^i B$ daqueles somatórios.
-Intuitivamente, para obter uma solução diferente de $A^* B$
-esta solução deve conter strings oriundas do termo $A^n X$.
+surge dos termos $A^i B$ daqueles somatórios.
+A chance de obter uma solução diferente de $A^* B$
+é que esta solução contenha strings que vieram do $A^n X$.
 
 Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
 
