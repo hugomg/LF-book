@@ -43,13 +43,14 @@
 #image("imgs/tennis.dot.svg")
 #image("imgs/tennis2.dot.svg")
 
-Um autômato finito é uma tupla $cal(A) = (Σ, Q, S, F, Δ)$, que contém:
+Um autômato finito pode ser descrito
+por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
 
 / $Σ$: o alfabeto.
 / $Q$: o conjunto de estados.
 / $S$: o conjunto de estados iniciais.
 / $F$: o conjunto de estados finais.
-/ $Δ$: o conjunto de arestas.
+/ $Δ$: a relação de transição (arestas)
 
 O alfabeto $Σ$ é um conjunto finito de caracteres,
 que descreve quais caracteres aparecem nas arestas do autômato.
@@ -59,14 +60,16 @@ o que é inclusive a principal limitação dos autômatos finitos.
 Os caminhos que percorremos no autômato começam
 em um estado de $S$ e terminam em algum estado de $F$.
 
-Uma aresta é uma tripla da forma $(Q × Σ × Q)$.
+Uma aresta é uma tripla $(Q × Σ × Q)$,
+com o estado de origem, o rótulo, e o estado de destino.
 O conjunto $Δ$ descreve uma relação de transição entre estados.
 Pense em uma tabela de um banco de dados relacional, em que as colunas são
 o estado de origem, o rótulo da aresta, e o estado de destino.
 
-Um *Autômato Finito Determinístico (AFD)* tem um único estado inicial,
-para cada estado de origem $X$ e e cada rótulo $a$,
-existe no máximo uma aresta rotulada por $a$ que sai de $X$.
+Um *Autômato Finito Determinístico (AFD)* 
+é um autômato que pode ser simulado sem ter que fazer escolhas.
+Ele tem um único estado inicial,
+e arestas que saem do mesmo estado sempre tem rótulos diferentes.
 Podemos enxegar a relação de transição como uma _função de transição_.
 Especificamente, uma função parcial que mapeia $(X,a)$ para o estado de destino $Y$.
 
@@ -74,6 +77,9 @@ Um *Autômato Finito Não-Determinístico (AFND)*
 não tem estas restrições.
 Eles podem ter mais de um estado inicial
 e o conjunto de arestas pode ser uma relação qualquer.
+Para testar se uma palavra é reconhecida pelo autômato,
+temos que trabalhar com conjuntos de estados,
+em vez de um estado só.
 
 obs.: Algumas apresentações de AFD exigem que
 a função de transição seja total.
@@ -562,48 +568,56 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 ] <thm:arden-solution>
 #proof[
     $
-    & A X ∪ B \
-    & = A · (A^*B) ∪ B \
-    & = A · (union.big_(i=0)^(∞) A^i B) ∪ B \
-    & = (union.big_(i=1)^(∞) A^i B) ∪ A^0 B \
+    X & = A^* B\
     & = (union.big_(i=0)^(∞) A^i B) \
-    & = X
+    & = (union.big_(i=1)^(∞) A^i B) ∪ A^0 B \
+    & = A · (union.big_(i=0)^(∞) A^i B) ∪ B \
+    & = A · (A^*B) ∪ B \
+    & = A X ∪ B \
+
     $
 ]
 
 
 Falta mostrar que $A^*B$ é a menor solução.
-Isto é, qualquer solução $X$ é superconjunto de $A^*B$.
-Um argumento intuitivo é que
-se substituirmos $X$ por $A X ∪ B$ sucessivamente,
-os termos de $A^*B$ vão aparecendo: $A^0 B$, $A^1 B$, $A^2 B$, $...$
+Isto é, qualquer solução de $X = A X ∪ B$ contém $A^*B$.
+A intuição para isso aparece quando substituímos $X$ por #box[$A X ∪ B$] sucessivamente.
+Repare que na expansão de $X$ os termos de $A^*B$
+vão aparecendo um por um: $A^0 B, A^1 B, A^2 B, ...$.
 
 $
-                                  X &= A^0 X \
-                      A^0 (A X ∪ B) &= A^1 X ∪ bold(A^0 B) \
-               A^1(A X ∪ B) ∪ A^0 B &= A^2 X ∪ bold(A^1 B ∪ A^0 B) \
-      A^2 (A X ∪ B) ∪ A^1 B ∪ A^0 B &= A^3 X ∪ bold(A^2 B ∪ A^1 B ∪ A^0 B) \
-                                    &...
+                                             X &= \
+                            A^1 X ∪ underline(B) &= A^1 (A X ∪ B) ∪ B = \
+                    A^2 X ∪ underline(A B ∪ B) &= A^2 (A X ∪ B) ∪ A B ∪ B =\
+            A^3 X ∪ underline(A^2 B ∪ A B ∪ B) &= A^3 (A X ∪ B) ∪ A^2 B ∪ A B ∪ B = \
+    A^4 X ∪ underline(A^3 B ∪ A^2 B ∪ A B ∪ B) &= ... \ 
 $
 
-A prova formal sai por indução no número de repetições da estrela de Kleene.
+Para a prova formal, expandimos a definição de $A^*B$ como uma
+união infinita e mostramos que todos seus componentes $A^n B$
+estão contidos em $X$.
 
 #lemma[
     Se $A X ∪ B ⊆ X $ então $A^*B ⊆ X$.
 ] <thm:arden-least>
 #proof[
-    O nosso objetivo equivale a dizer que
-    para todo $n$, $A^n B ⊆ X$.
-    Vamos provar isto por indução em $n$
+    Nosso objetivo é mostrar que 
+    $union.big_(i=0)^(∞) A^i B ⊆ X$ .
+    Para tal, podemos mostrar
+    que $A^n B ⊆ X$ vale para todo $n$,
+    por indução em $n$.
+    Afinal, se o conjunto $X$ contém todos os $A^n B$,
+    ele deve ser maior ou igual a $union.big_(i=0)^(∞) A^i B$,
+    que por definição é o menor conjunto com esta propriedade.
 
-    Caso base: $n=0$
+    #emph[Caso base:] $n=0$
 
     $A^0 B = B ⊆ A X ∪ B ⊆ X$
 
-    Caso indutivo: $n ≥ 1$
+    #emph[Caso indutivo:] $n ≥ 1$
 
     Pela hipótese de indução, podemos assumir $A^(n-1) B ⊆ X$.
-    Por monotonicidade da concatenação, $A A^(n-1) B ⊆ A X$.
+    Concatenando $A$ dos dois lados, obtemos $A^n B ⊆ A X$.
     Portanto, $A^n B ⊆ A X ⊆ A X ∪ B ⊆ X$.
 ]
 
@@ -613,31 +627,33 @@ Finalmente, provamos o lema de Arden propriamente dito.
     $A^*B$ é a menor solução de $X = A X ∪ B$.
 ] <thm:arden>
 #proof[
-    O @thm:arden-solution nos diz que $A^*B$ é solução,
-    e o @thm:arden-least nos diz que todas as soluções contém $A^*B$.
+    O @thm:arden-solution nos diz que $A^*B$ é solução
+    e o @thm:arden-least nos diz que $A^*B$ é a menor solução.
 ]
 
-No teorema @thm:arden, tivemos um bom trabalho para especificar
+== Por que a menor solução?
+
+Tivemos um bom trabalho para especificar
 que buscamos a menor solução, e não meramente uma solução qualquer.
 O que justifica este esforço? Em que casos existem outras soluções
-além da menor solução $A^*B$? Um exemplo é a equação
+para $X = A X ∪ B$, além da menor solução $A^*B$?
+Um exemplo é a equação
 
 $
 X = X ∪ {a}
 $
 
 A menor solução é o conjunto ${a}$.
-No entanto, também são soluções todos os superconjuntos de ${a}$.
-A maior destas soluções é $Σ&^*$, a linguagem que contém todas as palavras.
+No entanto, também são soluções todos os superconjuntos de ${a}$:
+por exemplo, ${a, b}$ e $Σ&^*$ também são soluções.
 A culpa disso está no $X=X$ da equação,
-que ocorre quando o conjunto $A$ contém a palavra vazia.
-(O que corresponde a um loop vazio no autômato)
+que corresponde a um loop vazio no autômato.
 
 Como vimos anteriormente, a menor solução 
-surge dos termos $A^i B$ daqueles somatórios.
-A chance de obter uma solução diferente de $A^* B$
-é que esta solução contenha strings que vieram do $A^n X$.
-
+surge dos termos $A^i B$ da expansão de $X$.
+Para obtermos uma solução diferente de $A^* B$, 
+é preciso que existam palavras oriundas da parte $A^n X$ da expansão.
+Isto só é possível quando o conjunto $A$ contém a palavra vazia $ε$.
 Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
 
 #lemma[
@@ -664,7 +680,7 @@ Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
     $
 ]
 
-Usamos este lema para mostrar que, se $A$ não contém a palavra vazia,
+Agora podemos mostrar que se $A$ não contém a palavra vazia,
 então todas as soluções do sistema estão dentro de $A^*B$.
 
 #lemma[
@@ -676,11 +692,12 @@ então todas as soluções do sistema estão dentro de $A^*B$.
    Seja $w$ uma palavra de $X$,
    e seja $abs(w)$ o seu comprimento.
    Pelo @thm:arden-greatest, deduzimos que $w ∈  A^(abs(w)+1) X ∪ (union.big_(i=0)^(abs(w)) A^i B)$.
-   Mas repare que $ε ∉ A$.
-   Portanto, $A$ só contém palavras com comprimento maior ou igual a 1,
-   e $A^(abs(w)+1) X$ só contém palavras com comprimento pelo menos $abs(w)+1$.
-   Assim, não é possível que $w$ pertença a $A^(abs(w)+1) X$.
-   Necessariamente temos $w ∈ (union.big_(i=0)^(abs(w)) A^i B) ⊆ A^* B$.
+   Mas lembre que, como $ε ∉ A$,
+   então $A$ só contém palavras com comprimento maior ou igual a 1.
+   Portanto, $A^(abs(w)+1) X$ só contém palavras com comprimento
+   pelo menos $abs(w)+1$, o que impede que $w$ pertença a $A^(abs(w)+1) X$.
+   Concluimos que $w ∈ union.big_(i=0)^(abs(w)) A^i B$,
+   que por sua vez está contido em $A^* B$.
 ]
 
 Finalmente, podemos enunciar a versão tradicional do lema de Arden.
