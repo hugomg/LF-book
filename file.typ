@@ -104,64 +104,159 @@ assim como o seu rótulo.
 #let lab = $"str"$
 #let ars = $"ars"$
 
+
+
+#grid(
+    columns:(50%, 50%),
+    align:center,
+    
+    proof-tree(
+        rule(
+            $pathnil(X) : X ~> X$,
+            //=====
+            $X ∈ Q$,
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $pathcons(X, a, p) : X ~> Z$,
+            //==========
+            $X arr(a) Y ∈ Δ$,
+            $p : Y ~> Z$,
+        )
+    ),
+)   
+
+Existem duas formas de construir um caminho sobre um dado autômato:
+
++ (vazio) Se $X$ é um estado, então $X!$ é um caminho que vai de $X$ até $X$.
++ (passo) Se existe uma aresta $X arr(a) Y$
+   e $p$ é um caminho que vai de $Y$ até $Z$, 
+   então $pathcons(X, a, p)$ é um caminho que vai de $X$ até $Z$.
+
 Alguns exemplos de caminho:
 
 - $pathcons(E, a, pathcons(A, a, pathnil(X)))$
 - $pathcons(E, b, pathcons(B, b, pathnil(X)))$
 - $pathcons(E, a, pathcons(A, b, pathcons(E, a, pathcons(A, a, pathnil(X)))))$
 
+Podemos escrever uma função que recupera a palavra percorrida pelo caminho:
 
-Iremos definir o que é um caminho de forma indutiva.
-Esta técnica nos permite escrever funções recursivas sobre caminhos,
-assim como provas por indução sobre os caminhos. 
-De volta ao ponto, um *caminho* tem duas possíveis formas:
-
-1. $pathnil(y)$ é um caminho vazio, que começa e termina no vértice $y$.
-2. $pathcons(x,a,p)$
-    é um caminho que começa no vértice $x$,
-    passa por uma aresta rotulada por $a$,
-    e continua pelo sub-caminho $p$.
-
-As seguintes funções recursivas calculam, respectivamente:
-o primeiro estado,
-o último estado,
-a string percorrida,
-e o conjunto de arestas percorridas.
-
-#grid(
-    columns: (50%, 50%),
-    row-gutter: 2em,
-
-    $
-    &ini(pathnil(q)) &&= q \
-    &ini(pathcons(q,a,P)) &&= q \
-    $,
-
-    $
-    &fin(pathnil(q)) &&= q \
-    &fin(pathcons(q,a,P)) &&= fin(P) \
-    $,
-
-    $
-    &lab(pathnil(q)) &&= ε \
-    &lab(pathcons(q,a,P)) &&= a · lab(P) \
-    $,
-
-    $
-    &ars(pathnil(q)) &&= {} \
-    &ars(pathcons(q,a,P)) &&= {(q, a, ini(P))} ∪ ars(P) \
-    $,
-)
+$
+&lab(pathnil(X)) &&= ε \
+&lab(pathcons(X,a,p)) &&= a · lab(p) \
+$
 
 Agora estamos prontos para especificar
-a linguagem reconhecida por um autômato.
-Dado um autômato $cal(A)=(Σ,Q,S,F,δ)$,
-dizemos que ele reconhece a palavra $w$ se existe um caminho $p$
-que leva de um estado inicial para um final, passando por $w$. Isto é:
+a linguagem reconhecida por um autômato $cal(A)=(Σ,Q,S,F,δ)$.
+Dizemos que ele reconhece a palavra $w$ se existe um caminho $p$
+que leva de um estado inicial para um final, lendo a palavra $w$.
+Isto é:
+
+- $p : X ~> Z$
+- $X ∈ S$
+- $Z ∈ F$
 - $lab(p) = w$
-- $ini(p) ∈ S$
-- $fin(p) ∈ F$
-- $ars(p) ⊆ δ$
+
+= Derivações
+
+#let astep = $⊢$
+#let asteps = $attach(⊢, tr:*)$
+
+Caminhos são uma representação direta da sequência de estados
+que voram fisitados para reconhecer uma palavra da linguagem.
+No entanto, tem situações em que a notação é inconveniente para provas:
+tem letrinhas pequenas em cima das setas, e precisa usar a função $lab()$.
+
+Uma outra notação popular é a de #strong[derivações].
+Ela modela o comportamento de uma máquina que testa se a palavra é reconhecida.
+Esta máquina mantém duas variáveis: o estado atual, e a string restante que falta ler.
+A relação $⊢$ descreve uma transições de configuração:
+quando estamos no estado $X$ e a próxima letra é $a$,
+se existir uma aresta $X arr(a) Y$
+então podemos mudar para o estado $Y$ e consumir a letra $a$.
+
+#grid(
+    columns:(100%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $(X, a w) ⊢ (Y, w)$,
+            //--------------
+            $X a Y ∈ Δ$,
+        )
+    ),
+)
+
+Uma derivação completa consiste de uma sequência de zero ou mais destas
+transições, o que podemos representar pelo fecho reflexivo e transitivo
+da relação $⊢$:
+
+
+
+#grid(
+    columns:(50%, 50%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $(X, w) asteps (X, w)$,
+            //----------------
+            $$
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $(X, x) asteps (Z, z)$,
+            //----------------
+            $(X, x) astep (Y, y)$,
+            $(Y, y) asteps (Z, z)$,
+        )
+    ),
+)
+
+A linguagem do autômato é dada por
+
+$
+  L(cal(A)) = { w | (X, w) asteps (Z, ε) ∧ X∈S ∧ Z∈F }
+$
+
+Exemplo:
+
+$
+  (X, "ababa") ⊢ (Y, "baba") ⊢ (X, "aba") ⊢ (Y, "ba") ⊢ (X, "a") ⊢ (Y, ε)
+$
+
+
+Estas derivações são tão poderosas quanto caminhos.
+É possível escrever um algoritmo que converte de uma para a outra.
+
+$
+    "p2d"(#{
+        proof-tree(
+            rule(
+                $pathnil(X) : X ~> X$,
+                //=====
+                $X ∈ Q$,
+            )
+        )
+    }, w) =& (X, w) asteps (X, w) \
+
+    "p2d"(#{        
+        proof-tree(
+            rule(
+                $pathcons(X, a, p) : X ~> Z$,
+                //==========
+                $X arr(a) Y ∈ Δ$,
+                $p : Y ~> Z$,
+            )
+        )
+    }, w) =& "let" (Y, y) asteps (Z, z) := "p2d"(p, w) "in" \
+           & (X, a y) astep (Y, y) asteps (Z, z)
+$
 
 = Semântica operacional big-step
 
@@ -559,6 +654,139 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
         $
     ]
 ]
+
+
+= Semântica Denotacional
+
+Vou fazer as provas para este autômato específico.
+#image("imgs/bb.dot.svg")
+
+#let den(x) = $⟦#x⟧$
+
+Queremos encontrar a menor solução para o sistema
+$den(X) = {ε} ∪ a · den(X)$.
+
+Mais formalmente, o menor ponto fixo do operador $f(X) = {ε} ∪ a · X$
+
+== Prova de que é ponto fixo
+
+Para provar que a semântica operacional casa com a denotacional,
+o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
+é uma solução do sistema de equações pedido pela semântica denotacional.
+
+#block(breakable:false)[
+
+    #theorem[
+        $f({w | bigstep(X, w)}) = {w | bigstep(X, w)}$
+    ]
+    #proof[
+        Um caminho do estado $X$ até um estado final tem duas formas possíveis.
+        Ou $X$ é o estado final do caminho ($bigstep(X, ε)$),
+        ou visitamos uma aresta e em seguida vamos para o estado final:
+        $bigstep(X, a v)$, com $step(X, a, X)$ e $bigstep(X, v)$.
+    ]
+    $
+        &{w | bigstep(X, w)} \
+        &= #[(dois casos possíveis)] \
+        & {ε} ∪ {a v | bigstep(X, v)} \
+        &= #[(definição de concatenação)] \
+        & {ε} ∪ a · {v | bigstep(X, v)} \
+        &= #[(renomear)] \
+        & {ε} ∪ a · {w | bigstep(X, w)} \
+    $
+]
+
+
+== Prova de que é o menor ponto fixo (derivações)
+
+
+#let lfp=$μ F$
+
+Queremos mostrar que nossa semântica denotacional é compatível com a operacional.
+Isto é, o menor ponto fixo do sistema de equações
+é a linguagem das palavras reconhecidas pelo autômato.
+
+O sistema:
+$
+    ⟦X⟧ = φ(X) ∪ union.big_(X a Y ∈ Δ) a · ⟦Y⟧ \
+$
+
+#lemma[
+    As linguagens da semântica operacional formam uma solução
+    do sistema de equações da semântica denotacional.
+    Isto é, para todo estado X,
+
+    $ L(X) = φ(X) ∪ union.big_(X a Y ∈ Δ) a · L(Y) . $ 
+]
+#proof[
+    O principal truque é quebrar a derivação $(X,w) asteps (Z,ε)$ em dois casos:
+    + $(X, w) asteps (Y, ε)$ = $(Z, ε) astep (Z, ε)$
+    + $(X, w) asteps (Y, ε)$ = $(Z, a v) astep (Y, v) asteps (Z, ε)$
+    No primeiro, a unificação nos diz que $X=Z$ e $w=ε$.
+    No segundo, temos que $w$ precisa começar com alguma letra $a$
+    e deve existir uma aresta $X a Y$.
+
+    $
+        & L(X) \
+        = & #[(definição da semântica operacional)]\
+        & {w | (X, w) asteps (Z, ε) ∧ Z ∈ F}\
+        = & #[(quebrar em casos)]\
+
+        & {ε | (X, ε) asteps (X, ε) ∧ x ∈ F} ∪ \
+        & { a v | (X, a v) astep (Y, v) asteps (Z, ε)
+                ∧ X a Y ∈ Δ ∧ Z ∈ F } \
+        = & #[(simplificar)]\
+        & {ε | X ∈ F} ∪ 
+        { a v | (Y, v) asteps (Z, ε)
+                ∧ X a Y ∈ Δ ∧ Z ∈ F } \
+        = & #[(mover o $ forall X a Y$ para fora da expressão)]\
+        & {ε | X ∈ F} ∪
+        union.big_(X a Y ∈ Δ) a · { v | (Y, v) asteps (Z, ε) ∧ Z ∈ F } \
+        = & #[(definições de $φ(X)$ e de $L(Y)$)]\
+        & φ(X) ∪
+        union.big_(X a Y ∈ Δ) a · L(Y) \
+
+
+    
+    $
+]
+
+#lemma[
+    As linguagens da semântica operacional são um lower bound
+    do sistema de equações da semântica denotacional.
+
+    $
+        cal(F)(R) ≤ R ==> L ≤ R
+    $
+]
+#proof[
+    Primeiro, devemos massagear o enunciado
+
+    Se para todo $X$, $(φ(X) ∪ union.big_(X a Y ∈ Δ) a · R(Y)) ⊆ R(X)$, \
+    então para todo $X$, $L(X) ⊆ L(X)$.
+
+    Se para todos $X, w$,
+    $
+    (w∈φ(X) ∨ exists X a Y∈Δ : w ∈ a · R(Y)) ==> w ∈ R(X)
+    $
+
+    então para todos $X,Z,w$,
+    $ ( (X,w) asteps (Z, ε) ∧ Z∈F) ==> w ∈ R(X) $
+
+    A prova é por indução na evidência $(X,w) asteps (Z, ε)$
+
+    No caso base, temos $X=Z$ e $w=ε$.
+    Como $Z$ é final, $X$ também é.
+    Portanto, $w∈φ(X)$ e a hipótese nos permite concluir $w ∈ R(X)$.
+
+    No caso indutivo, temos
+    $(X,w) asteps (Z, ε)$ = $(X,a v) astep (Y, v) asteps (Z, ε)$.
+    Portanto, existe uma aresta $X a Y$ que leva de $X$ a $Y$,
+    e sabemos que $w$ começa com $a$ ($w = a v$).
+    Aplicando a hipótese de indução em $(Y, v) asteps (Z, ε)$,
+    deduzimos que $v ∈ R(Y)$. Logo, $w = a v ∈ a · R(Y)$.
+    Com isso, podemos aplicar a hipótese $H$ e obter $w ∈ R(X)$.
+]   
 
 
 = Lema de Arden
