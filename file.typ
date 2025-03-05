@@ -55,7 +55,7 @@ por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
 O alfabeto $Σ$ é um conjunto finito de caracteres,
 que descreve quais caracteres aparecem nas arestas do autômato.
 
-O conjunto de estados $Q$ deve ser finito, 
+O conjunto de estados $Q$ deve ser finito,
 o que é inclusive a principal limitação dos autômatos finitos.
 Os caminhos que percorremos no autômato começam
 em um estado de $S$ e terminam em algum estado de $F$.
@@ -66,7 +66,7 @@ O conjunto $Δ$ descreve uma relação de transição entre estados.
 Pense em uma tabela de um banco de dados relacional, em que as colunas são
 o estado de origem, o rótulo da aresta, e o estado de destino.
 
-Um *Autômato Finito Determinístico (AFD)* 
+Um *Autômato Finito Determinístico (AFD)*
 é um autômato que pode ser simulado sem ter que fazer escolhas.
 Ele tem um único estado inicial,
 e arestas que saem do mesmo estado sempre tem rótulos diferentes.
@@ -109,7 +109,7 @@ assim como o seu rótulo.
 #grid(
     columns:(50%, 50%),
     align:center,
-    
+
     proof-tree(
         rule(
             $pathnil(X) : X ~> X$,
@@ -126,13 +126,13 @@ assim como o seu rótulo.
             $p : Y ~> Z$,
         )
     ),
-)   
+)
 
 Existem duas formas de construir um caminho sobre um dado autômato:
 
 + (vazio) Se $X$ é um estado, então $X!$ é um caminho que vai de $X$ até $X$.
 + (passo) Se existe uma aresta $X arr(a) Y$
-   e $p$ é um caminho que vai de $Y$ até $Z$, 
+   e $p$ é um caminho que vai de $Y$ até $Z$,
    então $pathcons(X, a, p)$ é um caminho que vai de $X$ até $Z$.
 
 Alguns exemplos de caminho:
@@ -245,7 +245,7 @@ $
         )
     }, w) =& (X, w) asteps (X, w) \
 
-    "p2d"(#{        
+    "p2d"(#{
         proof-tree(
             rule(
                 $pathcons(X, a, p) : X ~> Z$,
@@ -273,7 +273,7 @@ O resultado disso é que a especificação, além do caminho em si,
 também usa uma série de predicados baseados em $lab$, $ini$, $fin$, e $ars$.
 
 Nesta seção vamos apresentar uma formulação alternativa da semântica de um autômato,
-que especifica diretamente o que é um caminho adequado. 
+que especifica diretamente o que é um caminho adequado.
 A relação $bigstep(q, w)$ codifica que existe um caminho adequado
 que leva de $q$ para um estado final, passando por $w$.
 
@@ -320,7 +320,7 @@ Por extenso:
     - $ars(p) = δ$.
 ]
 #proof[
-    
+
     Construímos um procedimento que
     recebe uma evidência de $w ∈ L_(⇓)(cal(A))$
     e produz uma evidência de $w ∈ L_(P)(cal(A))$.
@@ -349,7 +349,7 @@ Por extenso:
     Como o conjunto vazio está contido em qualquer outro conjunto, temos $ars(P) ⊆ δ$.
     Além disso, vimos antes que $X ∈ F$ e portanto $fin(P) ⊆ F$.
     Portanto, $P$ é um caminho que leva de $X$ a um estado final, lendo a string $w=ε$.
-    
+
     / Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
 
     Desta vez, as sub-evidências que recevemos são uma evidência de que
@@ -359,7 +359,7 @@ Por extenso:
     concluimos que existe um caminho $p'$ que reconhece $w'$ a partir de $Y$:
 
     $
-    ini(p') &= Y \ 
+    ini(p') &= Y \
     fin(p') &∈ F \
     lab(p') &= w' \
     ars(p') &= δ \
@@ -388,7 +388,7 @@ Por extenso:
 ]
 #proof[
     Desta vez a prova é por indução no caminho $P$.
-    
+
     / Caso base: $P=pathnil(X)$
 
     Por definição, $ini(pathnil(X)) = fin(pathnil(X)) = X$ e $lab(pathnil(X))=ε$.
@@ -441,7 +441,7 @@ Por extenso:
     obtemos uma evidência de que $bigstep(ini(P'), lab(P'))$,
     e com isso podemos construir a evidência de que $bigstep(ini(P), lab(P))$.
 ]
-   
+
 = Semântica operacional small-step
 
 #let dmult = $attach(=>, tr:*)$
@@ -544,7 +544,7 @@ Outra maneira:
 )
 
 
-Obs.: 
+Obs.:
 A semântica baseada em $⇓$ é o que chamamos de _big step_.
 Em um pulo só, ela relaciona o estado diretamente com a string final.
 Já a semântica com $=>$ é _small step_.
@@ -716,7 +716,7 @@ $
     do sistema de equações da semântica denotacional.
     Isto é, para todo estado X,
 
-    $ L(X) = φ(X) ∪ union.big_(X a Y ∈ Δ) a · L(Y) . $ 
+    $ L(X) = φ(X) ∪ union.big_(X a Y ∈ Δ) a · L(Y) . $
 ]
 #proof[
     O principal truque é quebrar a derivação $(X,w) asteps (Z,ε)$ em dois casos:
@@ -736,7 +736,7 @@ $
         & { a v | (X, a v) astep (Y, v) asteps (Z, ε)
                 ∧ X a Y ∈ Δ ∧ Z ∈ F } \
         = & #[(simplificar)]\
-        & {ε | X ∈ F} ∪ 
+        & {ε | X ∈ F} ∪
         { a v | (Y, v) asteps (Z, ε)
                 ∧ X a Y ∈ Δ ∧ Z ∈ F } \
         = & #[(mover o $ forall X a Y$ para fora da expressão)]\
@@ -747,7 +747,7 @@ $
         union.big_(X a Y ∈ Δ) a · L(Y) \
 
 
-    
+
     $
 ]
 
@@ -786,7 +786,7 @@ $
     Aplicando a hipótese de indução em $(Y, v) asteps (Z, ε)$,
     deduzimos que $v ∈ R(Y)$. Logo, $w = a v ∈ a · R(Y)$.
     Com isso, podemos aplicar a hipótese $H$ e obter $w ∈ R(X)$.
-]   
+]
 
 
 = Lema de Arden
@@ -818,7 +818,7 @@ $
                             A^1 X ∪ underline(B) &= A^1 (A X ∪ B) ∪ B = \
                     A^2 X ∪ underline(A B ∪ B) &= A^2 (A X ∪ B) ∪ A B ∪ B =\
             A^3 X ∪ underline(A^2 B ∪ A B ∪ B) &= A^3 (A X ∪ B) ∪ A^2 B ∪ A B ∪ B = \
-    A^4 X ∪ underline(A^3 B ∪ A^2 B ∪ A B ∪ B) &= ... \ 
+    A^4 X ∪ underline(A^3 B ∪ A^2 B ∪ A B ∪ B) &= ... \
 $
 
 Para a prova formal, expandimos a definição de $A^*B$ como uma
@@ -829,7 +829,7 @@ estão contidos em $X$.
     Se $A X ∪ B ⊆ X $ então $A^*B ⊆ X$.
 ] <thm:arden-least>
 #proof[
-    Nosso objetivo é mostrar que 
+    Nosso objetivo é mostrar que
     $union.big_(i=0)^(∞) A^i B ⊆ X$ .
     Para tal, podemos mostrar
     que $A^n B ⊆ X$ vale para todo $n$,
@@ -877,9 +877,9 @@ por exemplo, ${a, b}$ e $Σ&^*$ também são soluções.
 A culpa disso está no $X=X$ da equação,
 que corresponde a um loop vazio no autômato.
 
-Como vimos anteriormente, a menor solução 
+Como vimos anteriormente, a menor solução
 surge dos termos $A^i B$ da expansão de $X$.
-Para obtermos uma solução diferente de $A^* B$, 
+Para obtermos uma solução diferente de $A^* B$,
 é preciso que existam palavras oriundas da parte $A^n X$ da expansão.
 Isto só é possível quando o conjunto $A$ contém a palavra vazia $ε$.
 Nossa prova começa com um lema auxiliar que desenrrola a equação $n$ vezes.
