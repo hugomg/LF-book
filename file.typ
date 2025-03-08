@@ -91,9 +91,8 @@ que serve de destino para todas as arestas faltantes.
 Um autômato reconhece uma palavra $w$ se existe um caminho
 rotulado por $w$, que leva de um estado inicial para um final.
 Para formalizar estes conceitos,
-precisamos definir uma estrutura de dados para os caminhos,
-assim como funções que calculam o início e fim de um caminho,
-assim como o seu rótulo.
+podemos definir uma estrutura de dados para os caminhos,
+assim como uma função que calcula o rótulo do caminho.
 
 #let arr(a) = $attach(→, t:#a)$
 #let pathnil(x) = $#x!$
@@ -131,7 +130,7 @@ assim como o seu rótulo.
 Existem duas formas de construir um caminho sobre um dado autômato:
 
 + (vazio) Se $X$ é um estado, então $X!$ é um caminho que vai de $X$ até $X$.
-+ (passo) Se existe uma aresta $X arr(a) Y$
++ (passo) Se $X a Y$ é uma aresta de $X$ para $Y$,
    e $p$ é um caminho que vai de $Y$ até $Z$,
    então $pathcons(X, a, p)$ é um caminho que vai de $X$ até $Z$.
 
@@ -164,18 +163,16 @@ Isto é:
 #let astep = $⊢$
 #let asteps = $attach(⊢, tr:*)$
 
-Caminhos são uma representação direta da sequência de estados
-que voram fisitados para reconhecer uma palavra da linguagem.
-No entanto, tem situações em que a notação é inconveniente para provas:
-tem letrinhas pequenas em cima das setas, e precisa usar a função $lab()$.
+Caminhos representam diretamente a sequência de estados visitados.
+No entanto, a função $lab()$ é um pouco inconveniente na hora de escrever provas.
 
-Uma outra notação popular é a de #strong[derivações].
-Ela modela o comportamento de uma máquina que testa se a palavra é reconhecida.
-Esta máquina mantém duas variáveis: o estado atual, e a string restante que falta ler.
-A relação $⊢$ descreve uma transições de configuração:
-quando estamos no estado $X$ e a próxima letra é $a$,
-se existir uma aresta $X arr(a) Y$
-então podemos mudar para o estado $Y$ e consumir a letra $a$.
+Uma notação mais comum é a de #strong[derivações].
+Ela modela uma máquina que testa se a palavra é reconhecida pelo autômato.
+Esta máquina mantém duas variáveis: o estado atual, e a string do que falta ler.
+A relação $⊢$ descreve uma transição de configuração:
+quando estamos no estado $X$ e a próxima letra da entrada é $a$,
+então se existir uma aresta $X a Y$
+nós podemos mudar para o estado $Y$ e consumir a letra $a$.
 
 #grid(
     columns:(100%),
@@ -190,11 +187,10 @@ então podemos mudar para o estado $Y$ e consumir a letra $a$.
     ),
 )
 
-Uma derivação completa consiste de uma sequência de zero ou mais destas
-transições, o que podemos representar pelo fecho reflexivo e transitivo
-da relação $⊢$:
-
-
+Uma derivação completa consiste de uma sequência destes passos.
+Usamos a relação $(X, x) asteps (Z, z)$ para dizer que existe uma
+sequência de zero ou mais transições que levam de $(X, x)$ a $(Z, z)$.
+No jargão técnico, $asteps$ é o fecho reflexivo e transitivo de $astep$.
 
 #grid(
     columns:(50%, 50%),
@@ -218,20 +214,27 @@ da relação $⊢$:
     ),
 )
 
-A linguagem do autômato é dada por
-
-$
-  L(cal(A)) = { w | (X, w) asteps (Z, ε) ∧ X∈S ∧ Z∈F }
-$
-
-Exemplo:
+Exemplo de uma derivação completa:
 
 $
   (X, "ababa") ⊢ (Y, "baba") ⊢ (X, "aba") ⊢ (Y, "ba") ⊢ (X, "a") ⊢ (Y, ε)
 $
 
+A linguagem das palavras aceitas a partir de um estado $X$
+são as palavras que levam de $X$ até um estado final $Z$:
 
-Estas derivações são tão poderosas quanto caminhos.
+$
+  L(X) = { w | (X, w) asteps (Z, ε) ∧ Z∈F }
+$
+
+A linguagem aceita para o autômato é o conjunto das palavras
+aceitas por algum dos estados iniciais
+
+$
+  L(cal(A)) = union.big_(X ∈ S) L(X)
+$
+
+Derivações são tão poderosas quanto caminhos.
 É possível escrever um algoritmo que converte de uma para a outra.
 
 $
@@ -263,19 +266,19 @@ $
 #let bigstep(X, w) = $#X ⇓ #w$
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
 
-A especificação formal baseada em caminhos tem a vantagem
-de que é fácil visualizar os caminhos,
-porém pode ser inconveniente na hora de escrever provas matemáticas.
-A raiz do problema é que a estrutura de dados do caminho não
-tem nada que impeça a criação de um caminho espúrio,
-que não tem nada a ver com o autômato.
-O resultado disso é que a especificação, além do caminho em si,
-também usa uma série de predicados baseados em $lab$, $ini$, $fin$, e $ars$.
+Em breve vamos escrever várias provas que discorrem sobre
+$L(X)$ e, é um pouco repetitivo ter que escrever toda hora
+aquele $(Z, ε) ∧ Z ∈ F$.
+Por isso inventei uma notação nova que abrevia isso.
+A relação $bigstep(X, w)$ codifica que existe um caminho
+que leva de $X$ para algum estado final, lendo $w$.
 
-Nesta seção vamos apresentar uma formulação alternativa da semântica de um autômato,
-que especifica diretamente o que é um caminho adequado.
-A relação $bigstep(q, w)$ codifica que existe um caminho adequado
-que leva de $q$ para um estado final, passando por $w$.
+$
+    bigstep(X, w) equiv  exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
+$
+
+Para as provas por indução eu gosto de definir $⇓$
+sem mencionar o $asteps$:
 
 #grid(
     columns:(50%, 50%),
@@ -293,160 +296,25 @@ que leva de $q$ para um estado final, passando por $w$.
         rule(
             $bigstep(X, a v)$,
             //--------------
-            $(X,a,Y) ∈ δ$,
+            $X a Y ∈ Δ$,
             $bigstep(Y, v)$,
         )
     ),
 )
 
-A maneira de ler esta notação de _dedução natural_
-é que a parte acima da barra lista as premissas,
-e a parte de baixo mostra a conclusão.
 Por extenso:
 
-1. Se $X$ é um estado final, então ele reconhece a palavra vazia
-2. Se existe uma aresta de $step(X,a,Y)$,
+1. Se $X$ é um estado final, então ele reconhece a palavra vazia.
+2. Se existe uma aresta $X a Y$
    e $Y$ reconhece $v$, então $X$ reconhece $a v$.
-3. Estados só reconhecem palavras descritas pelas regras acima.
+3. Estados só reconhecem palavras que se encaixam nas regras acima.
 
-#definition("Linguagem aceita por um AFD")[$L(cal(A)) = {w | bigstep(q_0, w)}$]
-
-
-#lemma[
-    $L_(⇓)(cal(A)) ⊆ L_(P)(cal(A))$. Isto é, se $bigstep(X, w)$, então existe $p$ com
-    - $ini(p) = X$,
-    - $fin(p) ∈ F$,
-    - $lab(p) = ε$,
-    - $ars(p) = δ$.
-]
-#proof[
-
-    Construímos um procedimento que
-    recebe uma evidência de $w ∈ L_(⇓)(cal(A))$
-    e produz uma evidência de $w ∈ L_(P)(cal(A))$.
-    A prova é por indução estrutural na evidência $bigstep(X, w)$,
-    e tem a cara de uma função recursiva que recebe a derivação de $bigstep(X, w)$,
-    e produz um caminho $P$, junto com evidência de que $P$ é um caminho
-    apropriado, que reconhece $w$ levando $X$ a um estado final.
-
-    / Caso base: $(X ∈ F) / bigstep(X, ε)$
-
-    A evidência que recebemos contém uma sub-evidência de que $X ∈ F$.
-    Poderemos usar este fato mais em frente.
-    (By the way, este empacotamento de sub-evidências é o principal atrativo)
-
-    Cada caso tem que apresentar um caminho e provar que ele é adequado.
-    Para o caso base escolhemos $P=pathnil(X)$.
-    Continuamos aplicando as definições de $ini, fin, lab, ars$:
-
-    $
-    ini(pathnil(X)) &= X \
-    fin(pathnil(X)) &= X \
-    lab(pathnil(X)) &= ε  \
-    ars(pathnil(X)) &= {} \
-    $
-
-    Como o conjunto vazio está contido em qualquer outro conjunto, temos $ars(P) ⊆ δ$.
-    Além disso, vimos antes que $X ∈ F$ e portanto $fin(P) ⊆ F$.
-    Portanto, $P$ é um caminho que leva de $X$ a um estado final, lendo a string $w=ε$.
-
-    / Caso indutivo: $((X,a,Y) ∈ δ; bigstep(Y, w')) / bigstep(X, a · w')$
-
-    Desta vez, as sub-evidências que recevemos são uma evidência de que
-    a aresta $(X,a,Y)$ pertence ao autômato, e que $bigstep(Y, w')$.
-    Aplicando a hipótese de indução em $bigstep(Y, w')$,
-    como se fosse uma chamada recursiva,
-    concluimos que existe um caminho $p'$ que reconhece $w'$ a partir de $Y$:
-
-    $
-    ini(p') &= Y \
-    fin(p') &∈ F \
-    lab(p') &= w' \
-    ars(p') &= δ \
-    $
-
-    Agora temos que usar essas peças
-    para construir um caminho que reconhece $a · w'$ saíndo de arr($X$).
-    Vamos escolher o caminho $P=pathcons(X,a, p')$. Temos
-    $
-    ini(pathcons(X,a, p')) &= X \
-    fin(pathcons(X,a, p')) &= fin(p')\
-    lab(pathcons(X,a, p')) &= a •lab(p')\
-    ars(pathcons(X,a, p')) &= {(X,a,Y)} ∪ ars(p')\
-    $
-
-    Juntando isso com a hipótese de indução,
-    podemos concluir que $fin(P) = fin(P') ⊆ F$,
-    e que $lab(P) = a · w'$.
-    Por último, $ars(P) ⊆ δ$ segue de $(X,a,Y) ∈ δ$ e de $ars(p') ⊆ δ$.
-]
-
-#lemma[
-    $L_(P)(cal(A)) ⊆ L_(⇓)(cal(A))$.
-    Isto é, $p$ é um caminho que reconhece $w=lab(P)$, saíndo de $X=ini(P)$,
-    então $bigstep(ini(P), lab(P))$.
-]
-#proof[
-    Desta vez a prova é por indução no caminho $P$.
-
-    / Caso base: $P=pathnil(X)$
-
-    Por definição, $ini(pathnil(X)) = fin(pathnil(X)) = X$ e $lab(pathnil(X))=ε$.
-    Pela hipótese podemos assumir $ini(P)∈F$,
-    que é a premissa necessária para construir evidência de $bigstep(X, ε)$.
-
-    #proof-tree(
-        rule(
-            $bigstep(X, ε)$,
-            //----
-            $X ∈ F$,
-        )
-    )
-
-    / Caso indutivo: $P=pathcons(X, a, P')$
-
-    Pela nossa premissa, sabemos que $fin(P) ∈ F$, e $ars(P) ⊆ δ$.
-    Aplicando as definições, temos
-    $ini(P) = X$,
-    $fin(P) = fin(P')$,
-    $lab(P) = a · lab(P')$,
-    $ars(P) = {(X, a, ini(P'))} ∪ ars(P')$.
-    Com isso, queremos obter evidência de $bigstep(X, a · lab(P'))$:
-
-    #proof-tree(
-        rule(
-            $bigstep(X, a · lab(P'))$,
-            //----
-            $(X, a, ini(P')) ∈ δ$,
-            $bigstep(ini(P'), lab(P'))$,
-        )
-    )
-
-
-    Para tal precisamos de uma evidência de que $bigstep(ini(P'), lab(P'))$.
-    Dá vontade de aplicar a hipótese de indução sobre $P'$, porém ainda não podemos!
-    A nossa premissa nos premite assumir que $P$ reconhece $w$,
-    mas não diz nada sobre $P'$.
-    Antes de aplicar a hipótese de indução,
-    temos que reconstruir a evidência de que $P'$ é um caminho adequado.
-    Isto é, $fin(P') ∈ F$ e $ars(P') ⊆ δ$.
-    (Esta complicação é exatamente o motivo pelo qual introduzimos a relação $⇓$.
-     A vida fica mais tranquilo quando a evidência contém as sub-evidências).
-
-    A primeira condição segue da premissa $fin(P) ∈ F$, junto com o $fin(P) = fin(P')$.
-    A segunda condição segue da premissa $ars(P) ⊆ δ$,
-    que também permite concluir  $(X, a, ini(P')) ∈ δ$.
-
-    Chegamos na reta final. Aplicando a hipótese de indução em $P'$,
-    obtemos uma evidência de que $bigstep(ini(P'), lab(P'))$,
-    e com isso podemos construir a evidência de que $bigstep(ini(P), lab(P))$.
-]
-
-= Semântica operacional small-step
+= Derivações de gramática
 
 #let dmult = $attach(=>, tr:*)$
 
-Uma semântica baseada na ideia de derivações de gramáticas.
+Esta semântica é comumente usada para linguagens livres de contexto,
+mas é raramente usada para linguagens regulares. 
 
 #grid(
     columns:(33%,33%,33%),
@@ -464,7 +332,7 @@ Uma semântica baseada na ideia de derivações de gramáticas.
         rule(
             $X => a Y$,
             //--------------
-            $(X,a,Y) ∈ δ$,
+            $X a Y ∈ Δ$,
         )
     ),
 
@@ -483,44 +351,7 @@ $
   " E" => "aA" => "abE" => "abbB" => "abbbX" => "abbb"
 $
 
-Precisamos também de uma relação que capture a ideia de "zero ou mais passos".
-
-$
-  " E" dmult "abbb"
-$
-
-Esta relação é o fecho reflexivo e transitivo de $=>$.
-
-#grid(
-    columns:(33%,33%,33%),
-    align:center,
-
-    proof-tree(
-        rule(
-            $X dmult X$,
-            $$
-        )
-    ),
-
-    proof-tree(
-        rule(
-            $X dmult Y$,
-            //--------------
-            $X => Y$,
-        )
-    ),
-
-    proof-tree(
-        rule(
-            $X dmult Z$,
-            //--------------
-            $X dmult Y$,
-            $Y dmult Z$,
-        )
-    ),
-)
-
-Outra maneira:
+É claro, também precisamos definir o fecho reflexivo e transitivo de $=>$.
 
 #grid(
     columns:(33%,33%,33%),
@@ -543,22 +374,28 @@ Outra maneira:
     ),
 )
 
+== Big-step vs small-step
 
-Obs.:
-A semântica baseada em $⇓$ é o que chamamos de _big step_.
-Em um pulo só, ela relaciona o estado diretamente com a string final.
-Já a semântica com $=>$ é _small step_.
-Ela faz vários passinhos até chegar na string final.
-Repare que o lado direito da relação $=>$ pode conter nomes de estado,
-além de caracteres do alfabeto $Σ$. Só vira uma string pura no último passo.
 
-Estas duas abordagens tem seus prós e contras.
-Semânticas big-step comumente resultam em provas mais simples,
-pois a definição indutiva da relação tem menos regras.
-A semântica small-step tem a vantagem da notação ser mais horizontal.
-Também está mais bem equipada para lidar com loops/caminhos infinitos.
-(Nós combinamos  de deixar as strings infinitas de fora das nossas linguagens,
-mas essa questão do loop infinito aparece comumente em outros contextos.)
+Semânticas como a do $⇓$ são o que chamamos de _big step_.
+Em um pulo só, ela relaciona o estado com a string que ele aceita.
+Por outro lado, as semânticas com $astep$ e $=>$ são _small step_,
+pois descrevem um passinho de cada vez.
+Uma diferença entre as duas é que nas semânticas small step
+precisamos ser capazes de representar as configurações intermediárias da computação.
+Na semântica $astep$ esta configuração é uma tupla de estado e string restante,
+enquanto na semântica $=>$ a configuração contém
+a string já lida seguida pelo estado atual.
+
+
+As abordagens big-step e small-step tem seus prós e contras.
+Semânticas big-step podem resultar em provas mais simples,
+já que usamos uma relação só,
+enquanto na big-step tem duas relações, uma com e outra sem a estrela.
+A principal vantagem as semânticas small step é que são
+mais capazes de lidar com loops infinitos.
+Outro atrativo, mais de notação,
+é que dá para escrever a derivação completa horizontalmente em uma linha só.
 
 = Semântica Denotacional
 
@@ -656,44 +493,126 @@ o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
 ]
 
 
-= Semântica Denotacional
+= Semântica Denotacional (geral)
 
-Vou fazer as provas para este autômato específico.
-#image("imgs/bb.dot.svg")
+Agora voou fazer a prova para o caso geral.
 
-#let den(x) = $⟦#x⟧$
+#let lfp=$μ F$
 
-Queremos encontrar a menor solução para o sistema
-$den(X) = {ε} ∪ a · den(X)$.
+Queremos mostrar que nossa semântica denotacional é compatível com a operacional.
+No caso geral, a semântica denotacional descreve um sistema de equações,
+com uma linguagem por estado. Buscamos a menor solução do sistema.
+$
+    ⟦X⟧ = φ(X) ∪ union.big_(X a Y ∈ Δ) a · ⟦Y⟧ \
+$
 
-Mais formalmente, o menor ponto fixo do operador $f(X) = {ε} ∪ a · X$
+Nosso objetivo é mostar que esta menor solução é 
+a linguagem das palavras aceitas pelo autômato operacionalmente:
+$⟦X⟧ = L(X)$.
 
-== Prova de que é ponto fixo
+== Prova de que é o menor ponto fixo (big step)
 
-Para provar que a semântica operacional casa com a denotacional,
-o primeiro passo é mostrar que a linguagem descrita pela semântica operacional
-é uma solução do sistema de equações pedido pela semântica denotacional.
+#lemma[
+    As linguagens da semântica operacional formam uma solução
+    do sistema de equações da semântica denotacional.
+    Isto é, para todo estado X,
 
-#block(breakable:false)[
+    $ L(X) = φ(X) ∪ union.big_(X a Y ∈ Δ) a · L(Y) . $
+]
+#proof[
+    O principal truque é que $bigstep(X, w)$
+    tem dois casos possíveis: $bigstep(X, ε)$ e $bigstep(X, a v)$.
 
-    #theorem[
-        $f({w | bigstep(X, w)}) = {w | bigstep(X, w)}$
-    ]
-    #proof[
-        Um caminho do estado $X$ até um estado final tem duas formas possíveis.
-        Ou $X$ é o estado final do caminho ($bigstep(X, ε)$),
-        ou visitamos uma aresta e em seguida vamos para o estado final:
-        $bigstep(X, a v)$, com $step(X, a, X)$ e $bigstep(X, v)$.
-    ]
+    No primeiro, a unificação nos diz que $X$ deve ser estado final e $w=ε$.
+    No segundo, temos que $w$ precisa começar com alguma letra $a$
+    e deve existir uma aresta $X a Y$ e a linguagem de $Y$ deve aceitar o resto da palavra..
+
     $
-        &{w | bigstep(X, w)} \
-        &= #[(dois casos possíveis)] \
-        & {ε} ∪ {a v | bigstep(X, v)} \
-        &= #[(definição de concatenação)] \
-        & {ε} ∪ a · {v | bigstep(X, v)} \
-        &= #[(renomear)] \
-        & {ε} ∪ a · {w | bigstep(X, w)} \
+        & L(X) \
+        = & #[(por definição)]\
+        & {w | bigstep(X, w)}\
+        = & #[(quebrar em casos)]\
+        & {ε | X ∈ F} ∪  { a v | X a Y ∈ Δ ∧ bigstep(Y, v) } \
+        = & #[(mover o $ forall X a Y$ para fora da expressão)]\
+        & {ε | X ∈ F} ∪
+        union.big_(X a Y ∈ Δ) a · { v | bigstep(Y, v) } \
+        = & #[(definições de $φ(X)$ e de $L(Y)$)]\
+        & φ(X) ∪
+        union.big_(X a Y ∈ Δ) a · L(Y) \
+
+
+
     $
+]
+
+#lemma[
+    As linguagens da semântica operacional são um lower bound
+    do sistema de equações da semântica denotacional.
+
+    $
+        cal(F)(R) ≤ R ==> L ≤ R
+    $
+]
+
+#proof[
+    Primeiro, devemos massagear o enunciado. Nossa hípótese é:
+
+    $
+      H: (φ(X) ∪ union.big_(X a Y ∈ Δ) a · R(Y)) ⊆ R(X)
+    $
+
+    em outras palavras:
+
+    $
+    H_1:& forall X: φ(X) ⊆ R(X) \
+    H_2:& forall X a Y: (X a Y ∈ Δ) ==> a R(Y) ⊆ R(X)
+    $
+
+    Assumindo $H_1$ e $H_2$, queremos mostrar que,
+    para todo $X$ e $w$,
+
+    $
+        bigstep(X, w) ==> w ∈ R(Y)
+    $
+
+    A prova é por indução em $bigstep(X,w)$.
+
+    No caso base, temos $w=ε$ e $X∈F$.
+    Portanto, por $H_1$, $w ∈ φ(X) ⊆ R(X)$
+
+    No caso indutivo, temos $w = a v$ e
+    existe uma aresta $X a Y$ tal que $bigstep(Y, v)$.
+    Pela hipótese de indução, $v ∈ R(Y)$.
+    Portanto, por $H_2$, $w = a v ∈ a R(Y) ⊆ R(X)$.
+]
+
+#proof[
+    Primeiro, devemos massagear o enunciado
+
+    Se para todo $X$, $(φ(X) ∪ union.big_(X a Y ∈ Δ) a · R(Y)) ⊆ R(X)$, \
+    então para todo $X$, $L(X) ⊆ L(X)$.
+
+    Se para todos $X, w$,
+    $
+    (w∈φ(X) ∨ exists X a Y∈Δ : w ∈ a · R(Y)) ==> w ∈ R(X)
+    $
+
+    então para todos $X,Z,w$,
+    $ ( (X,w) asteps (Z, ε) ∧ Z∈F) ==> w ∈ R(X) $
+
+    A prova é por indução na evidência $(X,w) asteps (Z, ε)$
+
+    No caso base, temos $X=Z$ e $w=ε$.
+    Como $Z$ é final, $X$ também é.
+    Portanto, $w∈φ(X)$ e a hipótese nos permite concluir $w ∈ R(X)$.
+
+    No caso indutivo, temos
+    $(X,w) asteps (Z, ε)$ = $(X,a v) astep (Y, v) asteps (Z, ε)$.
+    Portanto, existe uma aresta $X a Y$ que leva de $X$ a $Y$,
+    e sabemos que $w$ começa com $a$ ($w = a v$).
+    Aplicando a hipótese de indução em $(Y, v) asteps (Z, ε)$,
+    deduzimos que $v ∈ R(Y)$. Logo, $w = a v ∈ a · R(Y)$.
+    Com isso, podemos aplicar a hipótese $H$ e obter $w ∈ R(X)$.
 ]
 
 
@@ -821,7 +740,7 @@ $
     A^4 X ∪ underline(A^3 B ∪ A^2 B ∪ A B ∪ B) &= ... \
 $
 
-Para a prova formal, expandimos a definição de $A^*B$ como uma
+Para a prova formal, expandimos a definição de $A^*B$ cxomo uma
 união infinita e mostramos que todos seus componentes $A^n B$
 estão contidos em $X$.
 
