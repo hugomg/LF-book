@@ -26,6 +26,9 @@
 #show heading: set block(above: 1.4em, below: 1em)
 #show heading.where(depth:1): body => { pagebreak(weak: true); body}
 
+// Make ":" work like Latex's \colon by default. 
+#show sym.colon: it => math.class("punctuation", it)
+#let colon = math.class("relation", $:$)
 
 #let theorem    = thmplain("teorema", "Teorema", titlefmt: strong)
 #let lemma      = thmplain("lema", "Lema", titlefmt: strong)
@@ -38,6 +41,8 @@
 
 #let implies = $==>$
 #let iff     = $<==>$
+
+
 
 //=================================================
 
@@ -265,13 +270,26 @@ $
            & (X, a y) astep (Y, y) asteps (Z, z)
 $
 
+#strong[Exercício:]
+Prove que podemos adicionar e remover caracteres do final. Para todo $w$,
+$
+(X,x) astep (X,y) iff (X,x w) astep (X,y w) \
+$
+
+#strong[Exercício:]
+Extenda a prova para $asteps$. Para todo $w$,
+$
+(X,x) asteps (X,y) iff (X,x w) asteps (X,y w) \
+$
+
+
 = Semântica operacional big-step
 
 #let bigstep(X, w) = $#X ⇓ #w$
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
 
 Em breve vamos escrever várias provas que discorrem sobre
-$L(X)$ e é um pouco repetitivo ter que escrever toda hora
+$L(X)$ e é repetitivo ter que escrever toda hora
 aquele $(Z, ε) ∧ Z ∈ F$.
 Por isso inventei uma notação nova que abrevia isso.
 A relação $bigstep(X, w)$ codifica que existe um caminho
@@ -308,7 +326,7 @@ Por extenso:
 
 
 #strong[Exercício:] prove que a definição direta de $⇓$
-equivale à definição via $asteps$:
+equivale à sua especificação via $asteps$:
 
 $
     bigstep(X, w) iff exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
