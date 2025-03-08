@@ -35,6 +35,10 @@
 #let example    = thmplain("examplo", "Examplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
 
+
+#let implies = $==>$
+#let iff     = $<==>$
+
 //=================================================
 
 
@@ -158,19 +162,19 @@ Isto é:
 - $Z ∈ F$
 - $lab(p) = w$
 
-= Derivações
+= Relação de Transição
 
 #let astep = $⊢$
 #let asteps = $attach(⊢, tr:*)$
 
 Caminhos representam diretamente a sequência de estados visitados.
-No entanto, a função $lab()$ é um pouco inconveniente na hora de escrever provas.
+No entanto, a função $lab()$ é inconveniente na hora de escrever provas.
 
-Uma notação mais comum é a de #strong[derivações].
-Ela modela uma máquina que testa se a palavra é reconhecida pelo autômato.
+Uma outra maneira de especificar o comportamento do autômato é
+modelar uma máquina que testa se a palavra é reconhecida pelo autômato.
 Esta máquina mantém duas variáveis: o estado atual, e a string do que falta ler.
-A relação $⊢$ descreve uma transição de configuração:
-quando estamos no estado $X$ e a próxima letra da entrada é $a$,
+A relação de transição $⊢$ descreve os passos que a máquina executar.
+Quando estamos no estado $X$ e a próxima letra da entrada é $a$,
 então se existir uma aresta $X a Y$
 nós podemos mudar para o estado $Y$ e consumir a letra $a$.
 
@@ -189,7 +193,7 @@ nós podemos mudar para o estado $Y$ e consumir a letra $a$.
 
 Uma derivação completa consiste de uma sequência destes passos.
 Usamos a relação $(X, x) asteps (Z, z)$ para dizer que existe uma
-sequência de zero ou mais transições que levam de $(X, x)$ a $(Z, z)$.
+sequência de zero ou mais transições que levam de $(X, x)$ até $(Z, z)$.
 No jargão técnico, $asteps$ é o fecho reflexivo e transitivo de $astep$.
 
 #grid(
@@ -227,7 +231,7 @@ $
   L(X) = { w | (X, w) asteps (Z, ε) ∧ Z∈F }
 $
 
-A linguagem aceita para o autômato é o conjunto das palavras
+A linguagem aceita pelo autômato é o conjunto das palavras
 aceitas por algum dos estados iniciais
 
 $
@@ -267,18 +271,11 @@ $
 #let step(X, a, Y) = $#X attach(→, t:#a) #Y$
 
 Em breve vamos escrever várias provas que discorrem sobre
-$L(X)$ e, é um pouco repetitivo ter que escrever toda hora
+$L(X)$ e é um pouco repetitivo ter que escrever toda hora
 aquele $(Z, ε) ∧ Z ∈ F$.
 Por isso inventei uma notação nova que abrevia isso.
 A relação $bigstep(X, w)$ codifica que existe um caminho
 que leva de $X$ para algum estado final, lendo $w$.
-
-$
-    bigstep(X, w) equiv  exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
-$
-
-Para as provas por indução eu gosto de definir $⇓$
-sem mencionar o $asteps$:
 
 #grid(
     columns:(50%, 50%),
@@ -308,6 +305,16 @@ Por extenso:
 2. Se existe uma aresta $X a Y$
    e $Y$ reconhece $v$, então $X$ reconhece $a v$.
 3. Estados só reconhecem palavras que se encaixam nas regras acima.
+
+
+#strong[Exercício:] prove que a definição direta de $⇓$
+equivale à definição via $asteps$:
+
+$
+    bigstep(X, w) iff exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
+$
+
+
 
 = Derivações de gramática
 
