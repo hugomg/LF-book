@@ -1,0 +1,6 @@
+state X Y
+start X
+final Y
+
+X Y a
+Y X b

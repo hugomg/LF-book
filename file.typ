@@ -282,58 +282,6 @@ $
 (X,x) asteps (X,y) iff (X,x w) asteps (X,y w) \
 $
 
-
-= Semântica operacional big-step
-
-#let bigstep(X, w) = $#X ⇓ #w$
-#let step(X, a, Y) = $#X attach(→, t:#a) #Y$
-
-Em breve vamos escrever várias provas que discorrem sobre
-$L(X)$ e é repetitivo ter que escrever toda hora
-aquele $(Z, ε) ∧ Z ∈ F$.
-Por isso inventei uma notação nova que abrevia isso.
-A relação $bigstep(X, w)$ codifica que existe um caminho
-que leva de $X$ para algum estado final, lendo $w$.
-
-#grid(
-    columns:(50%, 50%),
-    align:center,
-
-    proof-tree(
-        rule(
-            $bigstep(X, ε)$,
-            //--------------
-            $X ∈ F$
-        )
-    ),
-
-    proof-tree(
-        rule(
-            $bigstep(X, a v)$,
-            //--------------
-            $X a Y ∈ Δ$,
-            $bigstep(Y, v)$,
-        )
-    ),
-)
-
-Por extenso:
-
-1. Se $X$ é um estado final, então ele reconhece a palavra vazia.
-2. Se existe uma aresta $X a Y$
-   e $Y$ reconhece $v$, então $X$ reconhece $a v$.
-3. Estados só reconhecem palavras que se encaixam nas regras acima.
-
-
-#strong[Exercício:] prove que a definição direta de $⇓$
-equivale à sua especificação via $asteps$:
-
-$
-    bigstep(X, w) iff exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
-$
-
-
-
 = Derivações de gramática
 
 #let dmult = $attach(=>, tr:*)$
@@ -399,28 +347,217 @@ $
     ),
 )
 
-== Big-step vs small-step
+= Semântica operacional big-step
+
+#let bigstep(X, w) = $#X ⇓ #w$
+#let step(X, a, Y) = $#X attach(→, t:#a) #Y$
+
+Em breve vamos escrever várias provas que discorrem sobre
+$L(X)$ e é repetitivo ter que escrever toda hora
+aquele $(Z, ε) ∧ Z ∈ F$.
+Por isso inventei uma notação nova que abrevia isso.
+A relação $bigstep(X, w)$ codifica que existe um caminho
+que leva de $X$ para algum estado final, lendo $w$.
+
+#grid(
+    columns:(50%, 50%),
+    align:center,
+
+    proof-tree(
+        rule(
+            $bigstep(X, ε)$,
+            //--------------
+            $X ∈ F$
+        )
+    ),
+
+    proof-tree(
+        rule(
+            $bigstep(X, a v)$,
+            //--------------
+            $X a Y ∈ Δ$,
+            $bigstep(Y, v)$,
+        )
+    ),
+)
+
+Por extenso:
+
+1. Se $X$ é um estado final, então ele reconhece a palavra vazia.
+2. Se existe uma aresta $X a Y$
+   e $Y$ reconhece $v$, então $X$ reconhece $a v$.
+3. Estados só reconhecem palavras que se encaixam nas regras acima.
 
 
-Semânticas como a do $⇓$ são o que chamamos de _big step_.
-Em um pulo só, ela relaciona o estado com a string que ele aceita.
-Por outro lado, as semânticas com $astep$ e $=>$ são _small step_,
-pois descrevem um passinho de cada vez.
-Uma diferença entre as duas é que nas semânticas small step
-precisamos ser capazes de representar as configurações intermediárias da computação.
-Na semântica $astep$ esta configuração é uma tupla de estado e string restante,
-enquanto na semântica $=>$ a configuração contém
-a string já lida seguida pelo estado atual.
+#strong[Exercício:] prove que a definição direta de $⇓$
+equivale à sua especificação via $asteps$:
+
+$
+    bigstep(X, w) iff exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
+$
 
 
-As abordagens big-step e small-step tem seus prós e contras.
-Semânticas big-step podem resultar em provas mais simples,
-já que usamos uma relação só,
-enquanto na big-step tem duas relações, uma com e outra sem a estrela.
-A principal vantagem as semânticas small step é que são
-mais capazes de lidar com loops infinitos.
-Outro atrativo, mais de notação,
-é que dá para escrever a derivação completa horizontalmente em uma linha só.
+// == Big-step vs small-step
+//
+//
+// Semânticas como a do $⇓$ são o que chamamos de _big step_.
+// Em um pulo só, ela relaciona o estado com a string que ele aceita.
+// Por outro lado, as semânticas com $astep$ e $=>$ são _small step_,
+// pois descrevem um passinho de cada vez.
+// Uma diferença entre as duas é que nas semânticas small step
+// precisamos ser capazes de representar as configurações intermediárias da computação.
+// Na semântica $astep$ esta configuração é uma tupla de estado e string restante,
+// enquanto na semântica $=>$ a configuração contém
+// a string já lida seguida pelo estado atual.
+// 
+// As abordagens big-step e small-step tem seus prós e contras.
+// Semânticas big-step podem resultar em provas mais simples,
+// já que usamos uma relação só,
+// enquanto na big-step tem duas relações, uma com e outra sem a estrela.
+// A principal vantagem as semânticas small step é que são
+// mais capazes de lidar com loops infinitos.
+// Outro atrativo, mais de notação,
+// é que dá para escrever a derivação completa horizontalmente em uma linha só.
+
+
+= Semântica via sistemas de equações.
+
+Semânticas operacionais
+exigem que nós rodemos um programa de computador para saber se uma palavra é aceita.
+Os detalhes dependem da implementação deste programa de computador.
+Até agora já vimos mais de uma versão:
+a semântica com  $astep$, a com $=>$, e a com $⇓$.
+
+Uma outra maneira de pensar sobre a semântica do autômato
+é especificar quais propriedades nós gostaríamos que fossem verdade
+sobre as linguagens reconhecidas por cada estado.
+A especificação da relação $⇓$ parece ser um bom começo:
+
+#[
+#set enum(numbering: "a)")
+1. Se $X$ é um estado final, então ele deve reconhecer a palavra vazia.
+2. Se existe uma aresta $X a Y$
+   e $Y$ reconhece $v$, então $X$ deve reconhecer $a v$.
+3. Estados só reconhecem palavras que se encaixam nas regras acima.
+]
+
+Buscamos atribuir uma linguagem à cada estado, obedecendo estas regras.
+As restrições (a) e (b) dizem quando a solução proposta é factível.
+Já a regra (c) diz que buscamos a solução mais simples dentre as factíveis.
+
+
+#image("imgs/aba.dot.svg")
+
+Vamos tentar escrever essas restrições diretamente,
+usando o autômato acima como exemplo.
+Buscamos uma função $L: Q -> Σ^*$ que atribui uma linguagem para cada estado.
+As regras (a) e (b) nos dizem que valores de $L(X)$ e $L(Y)$ são aceitáveis.
+
++ $ε ∈ L(Y)$
++ $v ∈ L(Y) implies "a" · v ∈ L(X)$
++ $v ∈ L(X) implies "b" · v ∈ L(Y)$
+
+Devemos tomar cuidado para não confundir
+os estados de entrada e saída de cada aresta.
+Vamos ler com calma o que cada uma dessas fórmulas diz.
+
++ A linguagem de Y deve conter a palavra vazia.
++ Para mostrar que uma palavra começando em "a" pertence à linguagem de X,
+    é~suficiente mostrar que o resto desta palavra pertence à linguagem de Y.
++ Para mostrar que uma palavra começando em "b" pertence à linguagem de Y,
+    é~suficiente mostrar que o resto desta palavra pertence à linguagem de X.
+
+Uma solução trivial é dizer que qualquer estado aceita qualquer palavra. 
+
++ $L(X) = Σ^*$
++ $L(Y) = Σ^*$
+
+Uma solução mais esperta é
+
++ $L(X) = "a"("b" "a"^*)$
++ $L(Y) = ("b" "a"^*)$
+
+Vamos conferir:
+
++ $ε ∈ ("b" "a"^*)$
++ $v ∈ ("b" "a"^*) implies "a" · v ∈ "a"("b" "a"^*)$
++ $v ∈ "a"("b" "a"^*) implies "b" · v ∈ ("b" "a"^*)$
+
+Esta solução que encontramos não é somente uma solução esperta,
+ela é a mais esperta de todas! Podemos mostrar que qualquer
+solução aceitável contém esta solução como sub-solução.
+Isto é, se $L$ é aceitável então
+
+$
+  "a"("b" "a"^*) ⊆ L(X) \
+     ("b" "a"^*) ⊆ L(Y)
+$
+
+Nossa prova será por indução no comprimento das palavras de $L$.
+Para tal, é melhor escrever o enunciado em termos de "$w∈$".
+Ou seja, se assumirmos como hipótese que $L$ é factível
+
++ $ε ∈ L(Y)$
++ $v ∈ L(Y) implies "a" · v ∈ L(X)$
++ $v ∈ L(X) implies "b" · v ∈ L(Y)$
+
+então para todo $w$ vale
+
+$
+  (A) w ∈ "a"("b" "a"^*) implies w ∈ L(X) \
+  (B) w ∈    ("b" "a"^*) implies w ∈ L(Y)
+$
+
+A indução tem que tratar três casos:
+
+- $w=ε$.
+  A implicação (A) vale vacuosamente pois $ε ∉ "a"("b" "a"^*)$.
+  A implicação (B) vale pois a hipótese (1) garante que $ε ∈ L(Y)$.
+
+- $w="a" v$.
+  Primeiro mostramos que $"a" v ∈ "a"("b" "a"^*) implies "a" v ∈ L(X)$.
+  Quando $"a"v ∈ "a"("b" "a"^*)$, necessariamente $v ∈ ("b" "a"^*)$.
+  Como $v$ é uma palavra mais curta, podemos aplicar a hipótese de indução
+  para obter $v ∈ L(Y)$. Pela regra (2) da especificação de factível,
+  concluímos $"a" v ∈ L(X)$.
+
+  A segunda implicação, $w ∈ ("b" "a"^*) implies w ∈ L(Y)$,
+  vale vacuosamente pois palavras que começam com "a" nunca casam com $("b" "a"^*)$.
+
+- $w="b" v$.
+  A prova é análoga à do caso anterior.
+  A implicação (A) vale vacuosamente,
+  e a implicação (B) segue da hipótese de indução junto com a regra (3).
+
+
+== Sistemas
+
+Agora vou reescrever as restrições para deixar num formato mais limpo.
+Primeiramente, vou omitir os $L()$ das fórmulas.
+Nem o Germán Cano aguenta escrever tanto L.
+Daqui pra frente, pode assumir que se eu escrever um estado
+num contexto que espera um conjunto/linguagem, na verdade é um $L(X)$ 
+
++ $ε ∈ Y$
++ $"a" · v ∈ X impliedby v ∈ Y$
++ $"b" · v ∈ Y impliedby v ∈ X$
+
+Podemos trocar as implicações por subconjuntos:
+
++ $Y ⊇ {ε}$
++ $X ⊇ "a" · Y$
++ $Y ⊇ "b" · X$
+
+Dá pra juntar as restrições
+para que haja só uma por variável.
+
++ $X ⊇ "a" · Y$
++ $Y ⊇ "b" · X ∪ {ε}$
+
+
+
+
+então podemos con
 
 = Semântica Denotacional
 
