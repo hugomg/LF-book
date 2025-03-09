@@ -1,9 +1,6 @@
-#import "@preview/ctheorems:1.1.3": *
-#show: thmrules.with(qed-symbol: $square$)
-
-#import "@preview/curryst:0.3.0": rule, proof-tree
-
 #import "functions.typ": *
+
+#show: thmrules.with(qed-symbol: $square$)
 
 #set page(
     margin: 1.25in,
@@ -27,17 +24,11 @@
 #show heading: set block(above: 1.4em, below: 1em)
 #show heading.where(depth:1): body => { pagebreak(weak: true); body}
 
-// Make ":" work like Latex's \colon by default. 
+// Make ":" be punctuation by default.
+// We use it for type annotations, forall, exists.
 #show sym.colon: it => math.class("punctuation", it)
-#let colon = math.class("relation", $:$)
 
-#let theorem    = thmplain("teorema", "Teorema", titlefmt: strong)
-#let lemma      = thmplain("lema", "Lema", titlefmt: strong)
-//#let definition = thmbox("definição", "Definição", inset: (x: 1.2em, top: 1em))
-#let definition = thmplain("definição", "Definição", titlefmt: strong)
-#let corollary  = thmplain("corolário", "Corolário", base: "theorem", titlefmt: strong)
-#let example    = thmplain("examplo", "Examplo").with(numbering: none)
-#let proof      = thmproof("prova", "Prova")
+
 
 //=================================================
 
@@ -412,7 +403,7 @@ $
 // é que dá para escrever a derivação completa horizontalmente em uma linha só.
 
 
-= Semântica via sistemas de equações.
+= Semântica por conjuntos
 
 Semânticas operacionais
 exigem que nós rodemos um programa de computador para saber se uma palavra é aceita.
@@ -425,32 +416,34 @@ Uma outra maneira de pensar sobre a semântica do autômato
 sobre as linguagens reconhecidas por cada estado.
 A especificação da relação $⇓$ parece ser um bom começo:
 
-#[
+#definition("Especificação da linguagem do autômato")[
 #set enum(numbering: "a)")
-1. Se $X$ é um estado final, então ele deve reconhecer a palavra vazia.
-2. Se existe uma aresta $X a Y$
++ Se $X$ é um estado final, então ele deve reconhecer a palavra vazia
++ Se existe uma aresta $X a Y$
    e $Y$ reconhece $v$, então $X$ deve reconhecer $a v$.
-3. Estados só reconhecem palavras que se encaixam nas regras acima.
-]
++ Estados só reconhecem palavras que se encaixam nas regras acima.
+] <def-viabilidade>
+
 
 Buscamos atribuir uma linguagem à cada estado, obedecendo estas regras.
-As restrições (a) e (b) dizem quando a solução proposta é factível.
-Já a regra (c) diz que buscamos a solução mais simples dentre as factíveis.
+As restrições (a) e (b) dizem quando a solução proposta é viável.
+Já a regra (c) diz que buscamos a solução mais simples,
+na qual as linguagens contém apenas as palavras essenciais
+para que a solução seja viável.
 
+== Um exemplo concreto
 
 #image("imgs/aba.dot.svg")
 
-Vamos tentar escrever essas restrições diretamente,
-usando o autômato acima como exemplo.
+Vamos escrever as restrições para o autômato acima.
 Buscamos uma função $L: Q -> Σ^*$ que atribui uma linguagem para cada estado.
-As regras (a) e (b) nos dizem que valores de $L(X)$ e $L(Y)$ são aceitáveis.
+As regras (a) e (b) nos dizem que valores de $L(X)$ e $L(Y)$ são viáveis:
 
 + $ε ∈ L(Y)$
 + $v ∈ L(Y) implies "a" · v ∈ L(X)$
 + $v ∈ L(X) implies "b" · v ∈ L(Y)$
 
-Devemos tomar cuidado para não confundir
-os estados de entrada e saída de cada aresta.
+Devemos tomar cuidado para colocar o $X$ e $Y$ no lugar certo.
 Vamos ler com calma o que cada uma dessas fórmulas diz.
 
 + A linguagem de Y deve conter a palavra vazia.
@@ -459,97 +452,145 @@ Vamos ler com calma o que cada uma dessas fórmulas diz.
 + Para mostrar que uma palavra começando em "b" pertence à linguagem de Y,
     é~suficiente mostrar que o resto desta palavra pertence à linguagem de X.
 
-Uma solução trivial é dizer que qualquer estado aceita qualquer palavra. 
-
-+ $L(X) = Σ^*$
-+ $L(Y) = Σ^*$
+Uma solução trivialmente viável é
+qualquer estado aceitar qualquer palavra.
+$
+L(X) &= Σ^* \
+L(Y) &= Σ^*
+$
 
 Uma solução mais esperta é
-
-+ $L(X) = "a"("b" "a"^*)$
-+ $L(Y) = ("b" "a"^*)$
-
-Vamos conferir:
-
-+ $ε ∈ ("b" "a"^*)$
-+ $v ∈ ("b" "a"^*) implies "a" · v ∈ "a"("b" "a"^*)$
-+ $v ∈ "a"("b" "a"^*) implies "b" · v ∈ ("b" "a"^*)$
-
-Esta solução que encontramos não é somente uma solução esperta,
-ela é a mais esperta de todas! Podemos mostrar que qualquer
-solução aceitável contém esta solução como sub-solução.
-Isto é, se $L$ é aceitável então
-
 $
-  "a"("b" "a"^*) ⊆ L(X) \
-     ("b" "a"^*) ⊆ L(Y)
+L(X) &= "a"("b" "a"^*) \
+L(Y) &= ("b" "a"^*)
 $
+
+Vamos conferir que esta solução é viável
+
++ $ε ∈ ("b" "a")^*$
++ $v ∈ ("b" "a")^* implies "a" · v ∈ "a"("b" "a")^*$
++ $v ∈ "a"("b" "a")^* implies "b" · v ∈ ("b" "a")^*$
+
+Esta solução esperta também é mínima!
+Podemos mostrar que qualquer
+solução viável contém esta solução como sub-solução.
+Isto é, se $L$ é viável então
+
+#[
+    #set enum(numbering: "a)")
+    + $"a"("b" "a")^* &⊆ L(X)$
+    + $("b" "a")^* &⊆ L(Y)$
+]
 
 Nossa prova será por indução no comprimento das palavras de $L$.
 Para tal, é melhor escrever o enunciado em termos de "$w∈$".
-Ou seja, se assumirmos como hipótese que $L$ é factível
+Isto é, para toda palavra $w$ queremos provar
 
-+ $ε ∈ L(Y)$
-+ $v ∈ L(Y) implies "a" · v ∈ L(X)$
-+ $v ∈ L(X) implies "b" · v ∈ L(Y)$
-
-então para todo $w$ vale
-
-$
-  (A) w ∈ "a"("b" "a"^*) implies w ∈ L(X) \
-  (B) w ∈    ("b" "a"^*) implies w ∈ L(Y)
-$
+#[
+    #set enum(numbering: "a)")
+    + $w ∈ "a"("b" "a")^* implies w ∈ L(X)$
+    + $w ∈    ("b" "a")^* implies w ∈ L(Y)$
+]
 
 A indução tem que tratar três casos:
 
 - $w=ε$.
-  A implicação (A) vale vacuosamente pois $ε ∉ "a"("b" "a"^*)$.
-  A implicação (B) vale pois a hipótese (1) garante que $ε ∈ L(Y)$.
+  A implicação (a) vale vacuosamente pois $ε ∉ "a"("b" "a")^*$.
+  A implicação (b) vale pois a hipótese (1) garante que $ε ∈ L(Y)$.
 
 - $w="a" v$.
-  Primeiro mostramos que $"a" v ∈ "a"("b" "a"^*) implies "a" v ∈ L(X)$.
-  Quando $"a"v ∈ "a"("b" "a"^*)$, necessariamente $v ∈ ("b" "a"^*)$.
-  Como $v$ é uma palavra mais curta, podemos aplicar a hipótese de indução
+  Para a implicação (a) queremos mostrar
+  que $"a" v ∈ "a"("b" "a")^* implies "a" v ∈ L(X)$.
+  Quando $"a"v ∈ "a"("b" "a")^*$, necessariamente $v ∈ ("b" "a")^*$.
+  Como $v$ é mais curta que $w$, podemos aplicar a hipótese de indução
   para obter $v ∈ L(Y)$. Pela regra (2) da especificação de factível,
   concluímos $"a" v ∈ L(X)$.
 
-  A segunda implicação, $w ∈ ("b" "a"^*) implies w ∈ L(Y)$,
-  vale vacuosamente pois palavras que começam com "a" nunca casam com $("b" "a"^*)$.
+  A implicação (b), $"a" v ∈ ("b" "a"^*) implies "a" v ∈ L(Y)$,
+  vale vacuosamente pois palavras que começam com "a"
+  nunca casam com $("b" "a")^*$.
 
 - $w="b" v$.
   A prova é análoga à do caso anterior.
-  A implicação (A) vale vacuosamente,
-  e a implicação (B) segue da hipótese de indução junto com a regra (3).
+  A implicação (a) vale vacuosamente
+  e a implicação (b) segue da hipótese de indução junto com a regra (3).
 
 
-== Sistemas
+== Sistemas de inequações
 
-Agora vou reescrever as restrições para deixar num formato mais limpo.
+Podemos apresentar as restrições de uma forma mais leve.
 Primeiramente, vou omitir os $L()$ das fórmulas.
 Nem o Germán Cano aguenta escrever tanto L.
-Daqui pra frente, pode assumir que se eu escrever um estado
-num contexto que espera um conjunto/linguagem, na verdade é um $L(X)$ 
+Daqui pra frente, assuma que se eu escrever um nome de estado
+em um contexto que espera um conjunto/linguagem,
+na verdade se trata de um $L(X)$.
 
 + $ε ∈ Y$
-+ $"a" · v ∈ X impliedby v ∈ Y$
-+ $"b" · v ∈ Y impliedby v ∈ X$
++ $v ∈ Y implies "a" · v ∈ X$
++ $v ∈ X implies "b" · v ∈ Y$
 
-Podemos trocar as implicações por subconjuntos:
+Podemos trocar as implicações por subconjuntos.
+Repare que o $"a"$ e o $"b"$ trocaram de lado,
+mas o significado é mesmo de antes.
 
-+ $Y ⊇ {ε}$
-+ $X ⊇ "a" · Y$
-+ $Y ⊇ "b" · X$
++ ${ε} ⊆ Y$
++ $"a" · Y ⊆ X$
++ $"b" · X ⊆ Y$
 
-Dá pra juntar as restrições
-para que haja só uma por variável.
+Finalmente, podemos usar união para juntar
+todas as inequações do $Y$ em uma regra só.
 
-+ $X ⊇ "a" · Y$
-+ $Y ⊇ "b" · X ∪ {ε}$
+$
+X &⊇ "a" Y \
+Y &⊇ "b" X ∪ ε
+$
 
+Resumindo, temos uma inequação para cada variável,
+com um termo para cada aresta do autômato.
+Além disso, as variáveis dos estados finais contém um termo $ε$.
+No caso geral fica
 
+$
+  L(X) ⊇ {ε | X ∈ F} ∪ union.big_(X a Y ∈ Δ) a · L(Y)
+$
 
+= Usando os sistemas
 
-então podemos con
+#grid(
+    columns:(50%, 50%),
+    align:center,
+
+    $
+        X &⊇ a W ∪ a Z \
+        W &⊇ b X \
+        Z &⊇ ε \
+    $,
+    image("imgs/aba-l.dot.svg"),
+
+    $
+        X &⊇ a b X ∪ a \
+    $,
+    image("imgs/aba-l2.dot.svg"),
+
+    $
+        X &⊇ a Y \
+        Y &⊇ b X ∪ ε \
+    $,
+    image("imgs/aba.dot.svg"),
+
+    $
+        X &⊇ a Y \
+        Y &⊇ b a Y ∪ ε \
+    $,
+    image("imgs/aba-r2.dot.svg"),
+
+    $
+        X &⊇ a Y \
+        Y &⊇ b Z ∪ ε \
+        W &⊇ a Y \
+    $,
+    image("imgs/aba-r.dot.svg"),
+)
 
 = Semântica Denotacional
 
