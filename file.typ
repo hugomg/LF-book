@@ -3,6 +3,7 @@
 
 #import "@preview/curryst:0.3.0": rule, proof-tree
 
+#import "functions.typ": *
 
 #set page(
     margin: 1.25in,
@@ -37,12 +38,6 @@
 #let corollary  = thmplain("corolário", "Corolário", base: "theorem", titlefmt: strong)
 #let example    = thmplain("examplo", "Examplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
-
-
-#let implies = $==>$
-#let iff     = $<==>$
-
-
 
 //=================================================
 
@@ -103,16 +98,13 @@ Para formalizar estes conceitos,
 podemos definir uma estrutura de dados para os caminhos,
 assim como uma função que calcula o rótulo do caminho.
 
-#let arr(a) = $attach(→, t:#a)$
-#let pathnil(x) = $#x!$
-#let pathcons(x,a,p) = $#x arr(#a) #p$
+#let pathnil(x)      = $#x!$
+#let pathcons(x,a,p) = $#x attach(→, t:#a) #p$
 
 #let ini = $"head"$
 #let fin = $"last"$
 #let lab = $"str"$
 #let ars = $"ars"$
-
-
 
 #grid(
     columns:(50%, 50%),
@@ -130,7 +122,7 @@ assim como uma função que calcula o rótulo do caminho.
         rule(
             $pathcons(X, a, p) : X ~> Z$,
             //==========
-            $X arr(a) Y ∈ Δ$,
+            $X a Y ∈ Δ$,
             $p : Y ~> Z$,
         )
     ),
@@ -262,7 +254,7 @@ $
             rule(
                 $pathcons(X, a, p) : X ~> Z$,
                 //==========
-                $X arr(a) Y ∈ Δ$,
+                $X a Y ∈ Δ$,
                 $p : Y ~> Z$,
             )
         )
