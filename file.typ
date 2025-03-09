@@ -1,5 +1,16 @@
 #import "functions.typ": *
 
+#import "@preview/ctheorems:1.1.3": *
+
+// TODO shared counters don't work (?)
+#let theorem    = thmplain("theorem", "Teorema", titlefmt: strong)
+#let lemma      = thmplain("lemma", "Lema", titlefmt: strong)
+#let definition = thmplain("definition", "Definição", titlefmt: strong)
+#let corollary  = thmplain("corollary", "Corolário",  titlefmt: strong)
+#let example    = thmplain("examplo", "Examplo").with(numbering: none)
+#let proof      = thmproof("prova", "Prova")
+#let exercise   = thmplain("exercise", "Exercício",  titlefmt: strong).with(base_level: 1)
+
 #show: thmrules.with(qed-symbol: $square$)
 
 #set page(
@@ -516,10 +527,42 @@ A indução tem que tratar três casos:
   e a implicação (b) segue da hipótese de indução junto com a regra (3).
 
 
-== Sistemas de inequações
+= Sistemas de inequações
 
-Podemos apresentar as restrições de uma forma mais leve.
-Primeiramente, vou omitir os $L()$ das fórmulas.
+Uma vantagem de especificar a semântica do autômato
+através de conjuntos é podemos manipulá-los
+usando equivalências entre expressões regulares.
+
+Veremos que essa estratégia será útil para demonstrar
+que dois autômatos são equivalentes.
+A ideia é converter o autômato~$A_1$
+para um sistema de restrições~$C_1$
+e mostrar que estas restrições equivalem ao sistema~$C_2$,
+que por sua vez é o sistema do autômato~$A_2$.
+
+
+
+```
+A1    A2
+|     | 
+C1 -- C2
+
+```
+
+== Notação de subconjuntos
+
+Já que vamos trabalhar bastante com estes sistemas
+de restrições sobre as linguagens,
+vale a pena parar para deixar a notação mais leve.
+Para fins ilustrativos usarei novamente o
+exemplo do Autômato [?]. Começamos com
+
++ $ε ∈ L(Y)$
++ $v ∈ L(Y) implies "a" · v ∈ L(X)$
++ $v ∈ L(X) implies "b" · v ∈ L(Y)$
+
+
+Primeiramente, vou omitir as chamadas $L()$.
 Nem o Germán Cano aguenta escrever tanto L.
 Daqui pra frente, assuma que se eu escrever um nome de estado
 em um contexto que espera um conjunto/linguagem,
@@ -529,8 +572,8 @@ na verdade se trata de um $L(X)$.
 + $v ∈ Y implies "a" · v ∈ X$
 + $v ∈ X implies "b" · v ∈ Y$
 
-Podemos trocar as implicações por subconjuntos.
-Repare que o $"a"$ e o $"b"$ trocaram de lado,
+Em seguida, podemos trocar as implicações por subconjuntos.
+Preste atenção que o $"a"$ e o $"b"$ trocaram de lado,
 mas o significado é mesmo de antes.
 
 + ${ε} ⊆ Y$
@@ -539,6 +582,7 @@ mas o significado é mesmo de antes.
 
 Finalmente, podemos usar união para juntar
 todas as inequações do $Y$ em uma regra só.
+Também passei a escrever a expressão regular $ε$ no lugar do conjunto ${ε}$.
 
 $
 X &⊇ "a" Y \
@@ -546,13 +590,64 @@ Y &⊇ "b" X ∪ ε
 $
 
 Resumindo, temos uma inequação para cada variável,
-com um termo para cada aresta do autômato.
-Além disso, as variáveis dos estados finais contém um termo $ε$.
+com um termo para cada aresta do autômato,
+e mais um termo para cada estado final.
 No caso geral fica
 
 $
   L(X) ⊇ {ε | X ∈ F} ∪ union.big_(X a Y ∈ Δ) a · L(Y)
 $
+
+== Pontos fixos
+
+Quando temos uma equação por variável,
+nosso sistema se comporta como uma equação
+$accent(X, ->) ⊇ f(accent(X, ->))$,
+onde $accent(X, ->)$ é um vetor de linguagens.
+Podemos nos aproveitar da rica teoria de pontos fixos.
+
+
+#definition("Função monotônica")[
+    Dizemos que $f: Σ^* → Σ^*$ é monotona,
+    ou que preserva a ordem, quando
+    $ A ⊆ B implies f(A) ⊆ f(B) $ 
+]
+
+Dizemos que uma linguagém é ponto (pré/pos)fixo de uma função monotona
+quando
+
+#definition("Ponto prefixo")[$f(x) ⊆ x$]
+#definition("Ponto pósfixo")[$x ⊆ f(x)$]
+#definition("Ponto fixo")[$f(x) = x$]
+
+Estamos particularmente interessados no menor dos pontos pré-fixos
+
+#definition("Menor ponto prefixo")[
+    Dizemos que $fix(f)$ é o menor ponto prefixo de $f$ se
+    ele é um pontro prefixo que é menor ou igual a todos os outros.
+    - $f(fix(f)) ⊆ fix(f)$
+    - Para todo $x$, $f(x) ⊆ x implies fix(f) ⊆ x$
+]
+#lemma[
+    O menor ponto prefixo também é um ponto fixo.
+    Portanto, $fix(f)$ é tanto o menor ponto prefixo 
+    quanto o menor ponto fixo. Na prática, quando queremos
+    mostrar que é um ponto fixo, basta provar que é prefixo,
+    e quando sabemos que é um ponto prefixo,
+    podemos assumir que é ponto fixo.
+]
+
+#proof[
+    Já sabemos $f(fix(f)) ⊆ fix(f)$. Resta mostrar $fix(f) ⊆ f(fix(f))$.
+
+    $
+      &f(fix(f)) ⊆ fix(f) \
+      &implies f(f(fix(f))) ⊆ f(fix(f)) \
+      &implies fix(f) ⊆ f(fix(f)) \
+    $
+]
+
+
 
 = Usando os sistemas
 
