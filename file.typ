@@ -1,5 +1,6 @@
 #import "functions.typ": *
 
+#import "@preview/curryst:0.3.0": rule, proof-tree
 #import "@preview/ctheorems:1.1.3": *
 
 // TODO shared counters don't work (?)
@@ -626,8 +627,10 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
     Dizemos que $fix(f)$ é o menor ponto prefixo de $f$ se
     ele é um pontro prefixo que é menor ou igual a todos os outros.
     - $f(fix(f)) ⊆ fix(f)$
-    - Para todo $x$, $f(x) ⊆ x implies fix(f) ⊆ x$
+    - Para to
+    do $x$, $f(x) ⊆ x implies fix(f) ⊆ x$
 ]
+
 #lemma[
     O menor ponto prefixo também é um ponto fixo.
     Portanto, $fix(f)$ é tanto o menor ponto prefixo 
@@ -635,19 +638,58 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
     mostrar que é um ponto fixo, basta provar que é prefixo,
     e quando sabemos que é um ponto prefixo,
     podemos assumir que é ponto fixo.
-]
-
+] <thm:lpp-is-lfp>
 #proof[
     Já sabemos $f(fix(f)) ⊆ fix(f)$. Resta mostrar $fix(f) ⊆ f(fix(f))$.
 
-    $
-      &f(fix(f)) ⊆ fix(f) \
-      &implies f(f(fix(f))) ⊆ f(fix(f)) \
-      &implies fix(f) ⊆ f(fix(f)) \
-    $
+    $ calculation(
+      f(fix(f)) ⊆ fix(f) ;
+      implies, #[$f$ é monótona] ;
+      f(f(fix(f))) ⊆ f(fix(f)) ;
+      implies, #[$f(fix(f))$ é um ponto prefixo, logo $fix(f)$ é menor] ;
+      fix(f) ⊆ f(fix(f))
+    ) $
 ]
 
+#theorem("Bekić")[
+    Um sistema de equações com mais de variável
+    pode ser resolvido uma variável de cada vez.
 
+    $
+      fixl(vec(x,y), vec(f(x,y), g(x,y))) =
+      vec(
+        fixl(x, f(x, fixl(y, g(x,y)))),
+        fixl(y, g(fixl(x, f(x,y)), y))
+      )
+    $
+]
+#proof[
+    Winskel (1993) capítulo 10.
+]
+
+#corollary("Introdução de equações")[
+    Introduzir uma nova equação não altera o resultado das outras equações.
+]
+
+#corollary("Remoção de inequações")[
+    Remover uma equação não altera o resultado das outras equações,
+    caso elas não usem a variável removida.
+]
+
+#lemma("Substitution rule")[
+    Substituir uma inequação na outra não
+    altera o menor ponto fixo do sistema.
+
+    $
+      fixl(vec(x,y), vec(f(x,y), g(x, y))) =
+      fixl(vec(x,y), vec(f(x, g(x, y)), g(x, y)))
+    $
+]
+#proof[
+    Todo ponto fixo do primeiro sistema é ponto fixo do segundo,
+    e vice versa. Portanto, o conjunto dos pontos fixos é
+    o mesmo e o menor ponto fixo também deve ser o mesmo.
+]
 
 = Usando os sistemas
 

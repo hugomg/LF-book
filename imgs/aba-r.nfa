@@ -1,0 +1,7 @@
+state X Y W
+start X
+final Y
+
+X Y a
+Y W b
+W Y a

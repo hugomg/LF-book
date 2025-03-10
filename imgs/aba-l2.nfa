@@ -1,0 +1,6 @@
+state X Z
+start X
+final Z
+
+X X ab
+X Z a
