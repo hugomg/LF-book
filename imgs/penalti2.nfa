@@ -1,0 +1,10 @@
+state E A B F
+start E
+final F
+
+E A a
+A E b
+A F x
+E B x
+B E x
+B F b

@@ -26,7 +26,8 @@
 )
 #set text(
     font: "Tex Gyre Pagella",
-    size:11pt
+    size:11pt,
+    lang: "pt"
 )
 
 #set heading(numbering: "1.")
@@ -45,10 +46,73 @@
 //=================================================
 
 
-= Autômatos Finitos
+= Autômatos e Linguagens
 
-#image("imgs/tennis.dot.svg")
-#image("imgs/tennis2.dot.svg")
+Esse autômato descreve uma disputa de pênaltis entre Brasil e Argentina.
+Já estamos nas cobranças alternadas, e a Argentina bate primeiro.
+Começamos no estado inicial E.
+A primeira linha acontece se a Argentina fizer o gol (a).
+Avançamos para o estado A, com vantagem para a Argentina,
+e esperamos a cobrança do Brasil.
+Se o Brasil também marcar (b),
+nós voltamos para a estaca zero;
+se o Brasil errar (x), a Argentina vence (F1).
+A segunda linha acontece se a argentina errar a cobrança (x),
+caso em que avançamos do estado E para o B.
+Desta vez, se o Brasil acertar a sua cobrança (b) ele ganha (F2),
+mas se errar (x) então voltamos ao início.
+
+
+#figure(
+    image("imgs/penalti.dot.svg"),
+    caption: [Cobrança de pênaltis entre Brasil e Argentina]
+) <img:penaltis1>
+
+Uma cobrança de pênaltis corresponde a um caminho no grafo,
+que sai do estado inicial e termina em algum dos estados finais.
+Representamos este caminho pela palavra que ele percorre,
+juntando as letras de cada aresta percorrida.
+Em ordem alfabética, as seguintes cobranças de pênaltis são válidas:
+
+- ax, xb
+- abax, abxb, xxax, xxbx
+- ababax, ababxb, abxxax, abxxbx, xxabax, xxabxb, xxxxax, xxxxbx
+- ...
+
+Este conjunto de palavras caracteriza o comportamento do autômato.
+Às vezes é possível construir um outro autômato
+que reconhece a mesma linguagem
+e portanto se comporta de forma equivalente.
+Por exemplo, as palavras do nosso conjunto não distinguem
+quem ganhou a disputa, então não faz diferença
+se juntarmos os estados F1 e F2 em um estado só.
+
+#figure(
+    image("imgs/penalti2.dot.svg"),
+    caption: [Como o vencedor não importa, podemos juntar F1 e F2]
+) <img:penaltis1>
+
+#image("imgs/penalti2.dot.svg")
+
+Exercício:
+As palavras abaixo não são disputas de pênaltis válidas.
+Justifique isso tanto pelas regras do futebol,
+quanto pelo comportamento do  autômato.
+
+#grid(
+    columns: 4,
+    gutter: 20pt,
+    [a) a x],
+    [b) aa],
+    [c) axa],
+    [d) ba],
+)
+
+
+
+
+
+
 
 Um autômato finito pode ser descrito
 por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
@@ -692,6 +756,41 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
 ]
 
 = Usando os sistemas
+
+#[
+    #grid(
+        rows: 2,
+        columns: 1,
+        gutter: 10pt,
+        [minimize $X$],
+        $
+            & X &&⊇ a W ∪ a Z \
+            & W &&⊇ b X \
+            & Z &&⊇ ε
+        $
+    )
+]
+
+$
+&X &&⊇ a W ∪ a Z \
+&W &&⊇ b X \
+&Z &&⊇ ε
+$)
+
+
+#let insert_alignments(eqn) = {
+    show "⊆": $&&⊆$
+    show "=": $&&=$
+    show "⊇": $&&⊇$
+    show linebreak: it => $#it&$
+    $ &eqn $
+}
+
+#insert_alignments($
+X ⊇ a W ∪ a Z \
+W ⊇ b X \
+Z ⊇ ε
+$)
 
 #grid(
     columns:(50%, 50%),
@@ -1369,7 +1468,7 @@ mas sistemas para o qual buscamos a solução menor / mais simples.
 Talvez seja fácil de se convencer que,
 após uma operação como substitição de variável,
 a solução do antigo sistema também é uma solução do novo sistema.
-Mas quem disse que ela também é a #emph[menor] solução do novo sistema?
+Mas quem disse que ela continua sendo é a #emph[menor] solução do novo sistema?
 
 Neste capítulo veremos que sim,
 as maneiras de manipular sistemas que vimos nos capítulos anteriores são válidas.
