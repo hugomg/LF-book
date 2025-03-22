@@ -48,6 +48,21 @@
 
 = Autômatos e Linguagens
 
+Autômatos finitos são um modelo de um processo computacional.
+Além das aplicações diretas para processamento de texto
+e especificação de sistemas, eles também são o fundamento
+para modelos mais complexos, para computação em geral.
+
+Alguns exemplos de perguntas que temos interesse em estudar:
+
+- Para quais entradas um certo algoritmo produz a saída desejada?
+- Duas implementações diferentes do mesmo algoritmo são equivalentes?
+- Existem problemas que não podem ser solucionados pelo nosso modelo computacional?
+- Qual é o impacto de introduzir não-determinismo no nosso modelo?
+
+Vamos partir para um exemplo!
+
+
 Esse autômato descreve uma disputa de pênaltis entre Brasil e Argentina.
 Já estamos nas cobranças alternadas, e a Argentina bate primeiro.
 Começamos no estado inicial E.
@@ -109,10 +124,81 @@ quanto pelo comportamento do  autômato.
 )
 
 
+== Strings / Palavras
 
+Vamos modelar a entrada do programa de computador
+como uma sequência de símbolos.
 
+/ Alfabeto: $Σ$, um conjunto finito de símbolos.
+/ String/Palavra: Uma sequência de símbolos.
+/ Linguagem: Um conjunto de strings.
 
+O alfabeto pode conter qualquer símbolo.
+Nos exemplos é comum usarmos letras de a até z,
+mas a princípio pode ser qualquer coisa
+inclusive símbolos e espaços.
 
+Algumas operações comuns sobre strings:
+
+/ Comprimento: $|"abcd"| = 4$
+/ Concatenação: $"ab" · "cd" = "abcd"$
+/ Exponenciação: $("ab")^3 = "ababab"$
+
+A operação de concatenação é associativa
+e tem como elemento neutro a string vazia.
+A letra $ε$ denota a string vazia.
+
+$
+  x · (y · z) = (x · y) · z \ 
+  ε · x = x =  x · ε
+$
+
+A operação de exponenciação descreve uma concatenação repetida.
+Podemos implementar esta repetição com uma definição recursiva.
+
+$
+  w ^ 0 &= ε \
+  w^(n+1) &= w · w^n
+$
+
+Uma vantagem da definição recursiva,
+comparada a uma definição com "somatório" ou "três pontinhos"
+é que ela é adequada para construirmos provas por indução.
+
+#theorem[
+    $ w^n · w^m = w^(n+m) $
+]
+#proof[
+    Faremos uma prova por indução em $n$.
+    Precisamos provar que a equação vale no caso $n=0$
+    e também que, se ela vale para $n$, então vale para $n+1$.
+
+    Caso base:
+    
+    $ calculation(
+        w^0 · w^m ;
+        =, #[definição da exponenciação] ;
+        ε · w^m ;
+        =, #[$ε$ é elemento neutro da concatenação] ;
+        w^m
+    ) $
+
+    Caso indutivo:
+    Assumimos $w^n · w^m = w^(n+m)$
+    e queremos concluir $w^(n+1) · w^m = w^(n+m+1)$.
+    
+    $ calculation(
+        w^n+1 · w^m ;
+        =, #[definição da exponenciação] ;
+        (w · w^n) · w^m ;
+        =, #[concatenação é associativa] ;
+        w · (w^n · w^m) ;
+        =, #[hipótese de indução] ;
+        w · (w^(n+m)) ;
+        =, #[definição da exponenciação] ;
+        w^(n+m+1)
+    ) $
+]
 
 Um autômato finito pode ser descrito
 por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
