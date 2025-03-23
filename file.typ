@@ -126,27 +126,32 @@ quanto pelo comportamento do  autômato.
 
 == Strings / Palavras
 
-Vamos modelar a entrada do programa de computador
-como uma sequência de símbolos.
+Nossos programas de computador
+recebem uma sequência de símbolos
+e retornam como saída uma resposta de sim ou não.
+Vamos agora discutir quais são as propriedades
+esperadas de uma sequência de símbolos.
 
 / Alfabeto: $Σ$, um conjunto finito de símbolos.
 / String/Palavra: Uma sequência de símbolos.
+/ String vazia: A letra $ε$ denota a string com zero símbolos.
 / Linguagem: Um conjunto de strings.
+
 
 O alfabeto pode conter qualquer símbolo.
 Nos exemplos é comum usarmos letras de a até z,
 mas a princípio pode ser qualquer coisa
-inclusive símbolos e espaços.
+inclusive símbolos de pontuação e espaços.
 
 Algumas operações comuns sobre strings:
 
 / Comprimento: $|"abcd"| = 4$
 / Concatenação: $"ab" · "cd" = "abcd"$
 / Exponenciação: $("ab")^3 = "ababab"$
+/ Reversão: $rev(("abc")) = "cba"$
 
 A operação de concatenação é associativa
 e tem como elemento neutro a string vazia.
-A letra $ε$ denota a string vazia.
 
 $
   x · (y · z) = (x · y) · z \ 
@@ -162,10 +167,11 @@ $
 $
 
 Uma vantagem da definição recursiva,
-comparada a uma definição com "somatório" ou "três pontinhos"
-é que ela é adequada para construirmos provas por indução.
+comparada a uma definição com "produtório" ou "três pontinhos"
+é que ela facilita provas por indução.
 
 #theorem[
+    A concatenação de duas exponenciações obedece
     $ w^n · w^m = w^(n+m) $
 ]
 #proof[
@@ -173,7 +179,7 @@ comparada a uma definição com "somatório" ou "três pontinhos"
     Precisamos provar que a equação vale no caso $n=0$
     e também que, se ela vale para $n$, então vale para $n+1$.
 
-    Caso base:
+    Caso base: queremos provar $w^0 · w^m = w^(0+m)$.
     
     $ calculation(
         w^0 · w^m ;
@@ -185,10 +191,10 @@ comparada a uma definição com "somatório" ou "três pontinhos"
 
     Caso indutivo:
     Assumimos $w^n · w^m = w^(n+m)$
-    e queremos concluir $w^(n+1) · w^m = w^(n+m+1)$.
+    e queremos $w^(n+1) · w^m = w^(n+m+1)$.
     
     $ calculation(
-        w^n+1 · w^m ;
+        w^(n+1) · w^m ;
         =, #[definição da exponenciação] ;
         (w · w^n) · w^m ;
         =, #[concatenação é associativa] ;

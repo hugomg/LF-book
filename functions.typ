@@ -2,6 +2,8 @@
 #let impliedby = $<==$
 #let iff       = $<==>$
 
+#let rev(x) = $#x ^R$
+
 #let fix(f) = $μ#f$
 #let lam(x, e) = $⟨#x ↦ #e⟩$
 #let fixl(x, e) = $fix(lam(#x,#e))$
