@@ -2,11 +2,17 @@
 #let impliedby = $<==$
 #let iff       = $<==>$
 
-#let rev(x) = $#x ^R$
+#let rev(x) = $#x^R$
+
+#let compl(x) = $overline(#x)$
+
+#let hastype = math.class("relation", sym.colon)
 
 #let fix(f) = $μ#f$
 #let lam(x, e) = $⟨#x ↦ #e⟩$
 #let fixl(x, e) = $fix(lam(#x,#e))$
+#let fixu(x, e) = $fix(⟨#x ⊇ #e⟩)$
+#let fixeq(x, e) = $fix(⟨#x = #e⟩)$
 
 
 // Produces a calculational proof that looks like this:

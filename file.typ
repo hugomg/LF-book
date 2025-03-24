@@ -124,7 +124,7 @@ quanto pelo comportamento do  autômato.
 )
 
 
-== Strings / Palavras
+== Strings
 
 Nossos programas de computador
 recebem uma sequência de símbolos
@@ -133,21 +133,36 @@ Vamos agora discutir quais são as propriedades
 esperadas de uma sequência de símbolos.
 
 / Alfabeto: $Σ$, um conjunto finito de símbolos.
-/ String/Palavra: Uma sequência de símbolos.
+/ String/Palavra: Uma sequência finita de símbolos.
 / String vazia: A letra $ε$ denota a string com zero símbolos.
-/ Linguagem: Um conjunto de strings.
 
+// NOTA DO PROFESSOR
+// Chame atenção para o que é finito ou infinito.
+// 
+// É essencial que as strings sejam finitas.
+// Se permitíssemos strings infinitas, entraríamos no mundo da co-indução.
+// 
+// Não é tão essencial que o alfabeto seja finito.
+// Porém, em autômatos com um número finito de estados
+// existe um número finito de grafos de transição entre os estados.
+// É sempre possível construir um alfabeto finito equivalente.
 
 O alfabeto pode conter qualquer símbolo.
 Nos exemplos é comum usarmos letras de a até z,
 mas a princípio pode ser qualquer coisa
 inclusive símbolos de pontuação e espaços.
 
+A notação $Σ^*$ se refere ao *conjunto de todas as strings*
+que podem ser construídas com os símbolos do alfabeto $Σ$.
+É comum escrevermos $w ∈ Σ^*$ para dizer que $w$ é uma string
+com símbolos do alfabeto $Σ$.
+
 Algumas operações comuns sobre strings:
 
-/ Comprimento: $|"abcd"| = 4$
+
 / Concatenação: $"ab" · "cd" = "abcd"$
 / Exponenciação: $("ab")^3 = "ababab"$
+/ Comprimento: $|"abcd"| = 4$
 / Reversão: $rev(("abc")) = "cba"$
 
 A operação de concatenação é associativa
@@ -170,13 +185,17 @@ Uma vantagem da definição recursiva,
 comparada a uma definição com "produtório" ou "três pontinhos"
 é que ela facilita provas por indução.
 
+// NOTA DO PROFESSOR
+// Achei bom apresentar uma prova fácil logo no início
+// para as pessoas já irem se acostumando.
+
 #theorem[
     A concatenação de duas exponenciações obedece
     $ w^n · w^m = w^(n+m) $
 ]
 #proof[
-    Faremos uma prova por indução em $n$.
-    Precisamos provar que a equação vale no caso $n=0$
+    A prova é por indução em $n$.
+    Precisamos mostrar que a equação vale para $n=0$
     e também que, se ela vale para $n$, então vale para $n+1$.
 
     Caso base: queremos provar $w^0 · w^m = w^(0+m)$.
@@ -186,7 +205,9 @@ comparada a uma definição com "produtório" ou "três pontinhos"
         =, #[definição da exponenciação] ;
         ε · w^m ;
         =, #[$ε$ é elemento neutro da concatenação] ;
-        w^m
+        w^m ;
+        =, #[aritmética] ;
+        w^(0+m)
     ) $
 
     Caso indutivo:
@@ -206,6 +227,112 @@ comparada a uma definição com "produtório" ou "três pontinhos"
     ) $
 ]
 
+// NOTA DO PROFESSOR
+// Possível continuação ou exercícios:
+// - Definir recursivamente rev e comprimento
+// - Provar |ab| = |a|+|b|
+// - Provar rev(xy) = rev(y)·rev(x)
+// - Provar rev(rev(x)) = x
+
+== Linguagens
+
+Uma #strong[linguagem] é conjunto de strings.
+Pudemos descrever o comportamento de um programa
+através do conjunto de entradas em que o programa responde "sim".
+
+Linguagens podem ser finitas ou infinitas.
+As strings são sempre finitas, mas a linguagem pode conter infinitas strings.
+Por exemplo, ${ε, "a", "aa", "aaa", ...}$.
+
+Para representar linguagens,
+vamos usar operações que criam linguagens mais complexas
+a partir de linguagens mais simples.
+Algumas destas operações são operações comuns de conjuntos
+e outras são extensões das operações sobre strings.
+
+#grid(
+    columns: 2,
+    gutter: 25pt,
+    align: (horizon+right, horizon+left),
+    [/ União:], $A ∪ B = {w | w ∈ A ∨ w ∈ B}$,
+    [/ Inserseção:], $A ∩ B = {w | w ∈ A ∧ w ∈ B}$,
+    [/ Concatenação:], $A · B = {x · y | x ∈ A ∧ y ∈ B}$,
+    [/ Exponenciação:], $A^0 &= {ε}  \ A^(n+1) &= A · A^n$,
+    [/ Estrela de Kleene:],
+         $A^* &= union.big_(i=0)^∞ A^i = {ε} ∪ A ∪ A^2 ∪ ...$,
+    [/ Complemento:], $compl(A) = {w | w ∈ Σ^* ∧ w ∉ A}$,
+)
+
+== Expressões regulares
+
+A concatenação é associativa 
+e tem o conjunto {ε} como elemento neutro.
+A concatenação com o conjunto vazio resulta no conjunto vazio.
+$
+    A · (B · C) = (A · B) · C \
+    {ε} · A = A = A · {ε} \
+    emptyset · A = emptyset  = A · emptyset
+$
+
+A união é associativa e comutativa
+e tem o conjunto vazio como elemento neutro.
+$
+    A ∪ (B ∪ C) = (A ∪ B) ∪ C \
+    A ∪ B = B ∪ A \
+    emptyset ∪ A = A = A ∪ emptyset
+$
+
+A união é indepotente
+$
+    A ∪ A = A
+$
+
+Distributividade:
+$
+  A · (B ∪ C) = A · B ∪ A · C \
+  (A ∪ B) · C = A · C ∪ B · C
+$
+
+As operações de concatenação e união são monótonas
+$
+  X ⊆ Y implies A · X ⊆ A · Y \
+  X ⊆ Y implies A ∪ X ⊆ A ∪ Y \
+$
+
+A concatenação se comporta como uma multiplicação
+e a união se comporta como a soma.
+O conjunto vazio é similar ao 0
+e o conjunto da string de comprimento zero é similar a 1.
+No entanto, ao contrário dos números convencionais,
+a multiplicação não é comutativa e não existem
+operações inversas (subtração e divisão).
+
+A operação $A^*$ descreve a menor solução
+da inequação $X ⊇ A X ∪ ε$.
+Isto é:
+
+- $A^* ⊇ A A^* ∪ ε$
+- $X ≥ A X ∪ ε  implies X ⊇ A^*$
+
+Inclusive podemos ir além e dizer que $A^* = A A^* ∪ ε$ .
+
+$ calculation(
+  A^* ⊇ A A^* ∪ ε;
+  implies, #[monotonicidade] ;
+  A A^* ⊇ A · (A A^* ∪ ε);
+  implies, #[monotonicidade] ;
+  A A^* ∪ ε ⊇ A · (A A^* ∪ ε) ∪ ε;
+  implies, #[$X ≥ A X ∪ ε  implies X ⊇ A^*$] ;
+  A A^* ∪ ε ⊇ A^*
+) $
+
+// NOTA DO PROFESSOR
+// É mais fácil descobrir essa prova de trás pra frente,
+// começando pelo final.
+
+== Autômatos
+
+
 Um autômato finito pode ser descrito
 por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
 
@@ -215,39 +342,65 @@ por uma tupla $cal(A) = (Σ, Q, S, F, Δ)$:
 / $F$: o conjunto de estados finais.
 / $Δ$: a relação de transição (arestas)
 
-O alfabeto $Σ$ é um conjunto finito de caracteres,
-que descreve quais caracteres aparecem nas arestas do autômato.
+O alfabeto $Σ$ descreve quais caracteres podem aparecer
+nas arestas do autômato.
 
-O conjunto de estados $Q$ deve ser finito,
-o que é inclusive a principal limitação dos autômatos finitos.
+Como é de se esperar,
+em um autômato finito o conjunto de estados $Q$ deve ser finito.
+Os subconjuntos $S$ e $F$ descrevem os pontos 
+de início e de fim dos caminho.
+
 Os caminhos que percorremos no autômato começam
 em um estado de $S$ e terminam em algum estado de $F$.
 
-Uma aresta é uma tripla $(Q × Σ × Q)$,
+Uma aresta é uma tripla $(Q × Σ^* × Q)$,
 com o estado de origem, o rótulo, e o estado de destino.
 O conjunto $Δ$ descreve uma relação de transição entre estados.
 Pense em uma tabela de um banco de dados relacional, em que as colunas são
 o estado de origem, o rótulo da aresta, e o estado de destino.
 
 Um *Autômato Finito Determinístico (AFD)*
-é um autômato que pode ser simulado sem ter que fazer escolhas.
+é um autômato que podemos testar se uma palavra é reconhecida
+sem nunca ter que fazer alguma escolha.
 Ele tem um único estado inicial,
-e arestas que saem do mesmo estado sempre tem rótulos diferentes.
-Podemos enxegar a relação de transição como uma _função de transição_.
-Especificamente, uma função parcial que mapeia $(X,a)$ para o estado de destino $Y$.
+e arestas que saem do mesmo estado não compartilham nenhum prefixo.
+Em particular, não podem começar com a mesma letra,
+e também não existem arestas com rótulo vazio.
+Podemos enxegar que a relação de transição tem
+uma dependência funcional:
+dado o estado atual e a próxima letra da entrada,
+há no máximo um estado de destino possível.
 
-Um *Autômato Finito Não-Determinístico (AFND)*
-não tem estas restrições.
+No caso geral, temos um *Autômato Finito Não-Determinístico (AFND)*,
+que não tem estas restrições.
 Eles podem ter mais de um estado inicial
 e o conjunto de arestas pode ser uma relação qualquer.
-Para testar se uma palavra é reconhecida pelo autômato,
-temos que trabalhar com conjuntos de estados,
-em vez de um estado só.
+São permitidas arestas com rótulos vazios.
+No entanto, para testar se uma palavra é reconhecida,
+é preciso testar vários caminhos em paralelo.
 
-obs.: Algumas apresentações de AFD exigem que
-a função de transição seja total.
-Dá pra fazer isso se introduzirmos um estado morto
-que serve de destino para todas as arestas faltantes.
+VARIAÇÕES: Outros livros podem apresentar autômatos finitos
+de uma forma diferente da que eu apresentei.
+Todos exigem que o conjunto de estados seja finito,
+mas os outros detalhes podem mudar.
+Porém em geral é possível adaptar um autômato de um formato para o outro,
+de forma que os formalismos são igualmente poderosos.
+A seguir eu listo algumas variações comuns.
+Você consegue pensar em como adaptar os nossos autômatos para esses formatos?
+
+- O autômato deve ter apenas um estado inicial
+- O autômato deve ter apenas um estado final
+- Os rótulos não podem ser palavras inteiras.
+  Só um símbolo do alfabeto, ou $ε$.
+- Em vez da relação de transição (conjunto de arestas),
+  há uma função que recebe estado atual e símbolo,
+  e retorna um conjunto de estados de destino possíveis.
+
+Exercício:
+Sabemos que todo autômato determinístico deve ter um único estado inicial.
+Podemos também exigir que tenha um único estado final?
+Ou será que existe alguma linguagem que precisa de pelo menos
+dois estados finais?
 
 = Caminhos
 
@@ -271,7 +424,7 @@ assim como uma função que calcula o rótulo do caminho.
 
     proof-tree(
         rule(
-            $pathnil(X) : X ~> X$,
+            $pathnil(X) hastype X ~> X$,
             //=====
             $X ∈ Q$,
         )
@@ -279,7 +432,7 @@ assim como uma função que calcula o rótulo do caminho.
 
     proof-tree(
         rule(
-            $pathcons(X, a, p) : X ~> Z$,
+            $pathcons(X, a, p) hastype X ~> Z$,
             //==========
             $X a Y ∈ Δ$,
             $p : Y ~> Z$,
@@ -293,6 +446,11 @@ Existem duas formas de construir um caminho sobre um dado autômato:
 + (passo) Se $X a Y$ é uma aresta de $X$ para $Y$,
    e $p$ é um caminho que vai de $Y$ até $Z$,
    então $pathcons(X, a, p)$ é um caminho que vai de $X$ até $Z$.
++ e nada mais é um caminho.
+
+// NOTA DO PROFESSOR
+// A regra 3 é a que proíbe caminhos infinitos.
+// Se estivéssemos definindo im tipo co-indutivo, essa parte mudaria.
 
 Alguns exemplos de caminho:
 
@@ -329,10 +487,10 @@ No entanto, a função $lab()$ é inconveniente na hora de escrever provas.
 Uma outra maneira de especificar o comportamento do autômato é
 modelar uma máquina que testa se a palavra é reconhecida pelo autômato.
 Esta máquina mantém duas variáveis: o estado atual, e a string do que falta ler.
-A relação de transição $⊢$ descreve os passos que a máquina executar.
-Quando estamos no estado $X$ e a próxima letra da entrada é $a$,
+A relação de transição $⊢$ descreve os passos que a máquina executa.
+Quando estamos no estado $X$ e o próximo trecho da entrada é $a$,
 então se existir uma aresta $X a Y$
-nós podemos mudar para o estado $Y$ e consumir a letra $a$.
+nós podemos mudar para o estado $Y$ e consumir o trecho $a$.
 
 #grid(
     columns:(100%),
@@ -387,11 +545,10 @@ $
   L(X) = { w | (X, w) asteps (Z, ε) ∧ Z∈F }
 $
 
-A linguagem aceita pelo autômato é o conjunto das palavras
-aceitas por algum dos estados iniciais
+O autômato aceita todas as palavras aceitas por algum dos estados iniciais.
 
 $
-  L(cal(A)) = union.big_(X ∈ S) L(X)
+  L(cal(A)) = union.big_(X ∈ S) L(X) = { w | (X, w) asteps (Z, ε) ∧ X∈S ∧ Z∈F }
 $
 
 Derivações são tão poderosas quanto caminhos.
@@ -401,7 +558,7 @@ $
     "p2d"(#{
         proof-tree(
             rule(
-                $pathnil(X) : X ~> X$,
+                $pathnil(X) hastype X ~> X$,
                 //=====
                 $X ∈ Q$,
             )
@@ -411,7 +568,7 @@ $
     "p2d"(#{
         proof-tree(
             rule(
-                $pathcons(X, a, p) : X ~> Z$,
+                $pathcons(X, a, p) hastype X ~> Z$,
                 //==========
                 $X a Y ∈ Δ$,
                 $p : Y ~> Z$,
@@ -540,8 +697,8 @@ Por extenso:
 3. Estados só reconhecem palavras que se encaixam nas regras acima.
 
 
-#strong[Exercício:] prove que a definição direta de $⇓$
-equivale à sua especificação via $asteps$:
+#strong[Exercício:] prove que a definição com $⇓$
+equivale à sua especificação com $asteps$:
 
 $
     bigstep(X, w) iff exists Z: (X, w) asteps (Z, ε) ∧ Z ∈ F  
@@ -720,7 +877,7 @@ exemplo do Autômato [?]. Começamos com
 
 
 Primeiramente, vou omitir as chamadas $L()$.
-Nem o Germán Cano aguenta escrever tanto L.
+Nem o Germán Cano aguenta tanto L.
 Daqui pra frente, assuma que se eu escrever um nome de estado
 em um contexto que espera um conjunto/linguagem,
 na verdade se trata de um $L(X)$.
@@ -764,14 +921,17 @@ onde $accent(X, ->)$ é um vetor de linguagens.
 Podemos nos aproveitar da rica teoria de pontos fixos.
 
 
-#definition("Função monotônica")[
-    Dizemos que $f: Σ^* → Σ^*$ é monotona,
-    ou que preserva a ordem, quando
+#definition("Função monótona")[
+    Dizemos que uma função $f$ é monótona quando
     $ A ⊆ B implies f(A) ⊆ f(B) $ 
 ]
 
-Dizemos que uma linguagém é ponto (pré/pos)fixo de uma função monotona
-quando
+Dá para extender esta definição para vetores de linguagens.
+Se $A$ e $B$ forem uma lista de linguages (uma para cada estado)
+nós comparamos componente a componente.
+
+Temos especial interesse nas soluções
+dos sistemas de equações / inequações.
 
 #definition("Ponto prefixo")[$f(x) ⊆ x$]
 #definition("Ponto pósfixo")[$x ⊆ f(x)$]
@@ -781,19 +941,15 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
 
 #definition("Menor ponto prefixo")[
     Dizemos que $fix(f)$ é o menor ponto prefixo de $f$ se
-    ele é um pontro prefixo que é menor ou igual a todos os outros.
+    ele é um ponto prefixo que também é menor ou igual a todos os outros.
     - $f(fix(f)) ⊆ fix(f)$
-    - Para to
-    do $x$, $f(x) ⊆ x implies fix(f) ⊆ x$
+    - $forall x: f(x) ⊆ x implies fix(f) ⊆ x$
 ]
 
 #lemma[
     O menor ponto prefixo também é um ponto fixo.
     Portanto, $fix(f)$ é tanto o menor ponto prefixo 
-    quanto o menor ponto fixo. Na prática, quando queremos
-    mostrar que é um ponto fixo, basta provar que é prefixo,
-    e quando sabemos que é um ponto prefixo,
-    podemos assumir que é ponto fixo.
+    quanto o menor ponto fixo.
 ] <thm:lpp-is-lfp>
 #proof[
     Já sabemos $f(fix(f)) ⊆ fix(f)$. Resta mostrar $fix(f) ⊆ f(fix(f))$.
@@ -806,6 +962,11 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
       fix(f) ⊆ f(fix(f))
     ) $
 ]
+
+Na prática, quando queremos mostrar que algo é um ponto fixo,
+basta provar que é prefixo, o que dá menos trabalho.
+Por outro lado, se já soubermos mos que algo é um ponto prefixo,
+podemos assumir de vez a hipótese mais forte de que é um ponto fixo.
 
 #theorem("Bekić")[
     Um sistema de equações com mais de variável
@@ -832,19 +993,21 @@ Estamos particularmente interessados no menor dos pontos pré-fixos
     caso elas não usem a variável removida.
 ]
 
-#lemma("Substitution rule")[
+#lemma("Substituição")[
     Substituir uma inequação na outra não
-    altera o menor ponto fixo do sistema.
+    altera o menor ponto fixo.
 
     $
-      fixl(vec(x,y), vec(f(x,y), g(x, y))) =
-      fixl(vec(x,y), vec(f(x, g(x, y)), g(x, y)))
+      fixeq(vec(x,y), vec(f(x,y), g(x, y))) =
+      fixeq(vec(x,y), vec(f(x, g(x, y)), g(x, y)))
     $
 ]
 #proof[
-    Todo ponto fixo do primeiro sistema é ponto fixo do segundo,
-    e vice versa. Portanto, o conjunto dos pontos fixos é
-    o mesmo e o menor ponto fixo também deve ser o mesmo.
+    Toda solução do primeiro sistema é solução do segundo e vice versa. Portanto, o conjunto dos pontos fixos é o mesmo
+    e consequentemente o menor ponto fixo também deve ser o mesmo.
+    Pelo @thm:lpp-is-lfp,
+    este menor ponto fixo também é o menor ponto prefixo,
+    o que implica que a substituição também vale para sistemas de inequações.
 ]
 
 = Usando os sistemas
