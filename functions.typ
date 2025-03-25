@@ -10,7 +10,7 @@
 
 #let fix(f) = $μ#f$
 #let lam(x, e) = $⟨#x ↦ #e⟩$
-#let fixl(x, e) = $fix(lam(#x,#e))$
+#let fixl(x, e) = [ #set math.vec(delim:none); $fix((#x ↦ #e))$]
 #let fixu(x, e) = $fix(⟨#x ⊇ #e⟩)$
 #let fixeq(x, e) = $fix(⟨#x = #e⟩)$
 

@@ -265,12 +265,32 @@ e outras são extensões das operações sobre strings.
 
 == Expressões regulares
 
+Escrever ${ε}$ e ${a}$ fica reperitivo bem rápido.
+É comum abreviarmos para $ε$ e $a$ quando
+estiver claro pelo contexto que estamos falando de conjuntos.
+
+Como veremos mais à frente, as linguagens produzidas pelos
+autômatos podem ser descritas usando apena
+concatenação, união, e estrela.
+Estas são as #strong[linguagens regulares].
+
++ A linguagem vazia $emptyset$ é regular.
++ Para qualquer palavra $w$, a linguagem ${w}$ é regular.
++ Se $A$ e $B$ são regulares, $A · B$ é regular.
++ Se $A$ e $B$ são regulares, $A ∪ B$ é regular.
++ Se $A$ é regular, $A^*$ é regular.
++ Nenhuma outra linguagem é regular.
+
+Exercício: toda linguagem finita é regular.
+
+Propriedades importantes das linguagens regulares:
+
 A concatenação é associativa 
-e tem o conjunto {ε} como elemento neutro.
+e tem a linguagem ε como elemento neutro.
 A concatenação com o conjunto vazio resulta no conjunto vazio.
 $
     A · (B · C) = (A · B) · C \
-    {ε} · A = A = A · {ε} \
+    ε · A = A = A · ε \
     emptyset · A = emptyset  = A · emptyset
 $
 
@@ -993,22 +1013,37 @@ podemos assumir de vez a hipótese mais forte de que é um ponto fixo.
     caso elas não usem a variável removida.
 ]
 
-#lemma("Substituição")[
-    Substituir uma inequação na outra não
-    altera o menor ponto fixo.
+#lemma("Substituição de equação")[
+    Substituir uma equação na outra
+    não altera a menor solução do sistema.
 
-    $
-      fixeq(vec(x,y), vec(f(x,y), g(x, y))) =
-      fixeq(vec(x,y), vec(f(x, g(x, y)), g(x, y)))
-    $
+    #let aa = block[$ x &= f(x,y)      \ y &= g(x,y) $]
+    #let bb = block[$ x &= f(x,g(x,y)) \ y &= g(x,y) $]
+    $ μ(#aa) = μ(#bb) $
 ]
 #proof[
-    Toda solução do primeiro sistema é solução do segundo e vice versa. Portanto, o conjunto dos pontos fixos é o mesmo
-    e consequentemente o menor ponto fixo também deve ser o mesmo.
-    Pelo @thm:lpp-is-lfp,
-    este menor ponto fixo também é o menor ponto prefixo,
-    o que implica que a substituição também vale para sistemas de inequações.
+    Toda solução do sistema de equações da esquerda
+    é solução do sistema de equações da direita e vice versa.
+    Portanto, o conjunto das soluções é o mesmo
+    e a menor solução  também deve ser a mesma.
+    
 ]
+
+#lemma("Substituição de inequação")[
+    Substituir uma inequação na outra
+    não altera a menor solução do sistema.
+
+    #let aa = block[$ x &⊇ f(x,y)      \ y &⊇ g(x,y) $]
+    #let bb = block[$ x &⊇ f(x,g(x,y)) \ y &⊇ g(x,y) $]
+    $ μ(#aa) = μ(#bb) $
+]
+#proof[
+    Pelo @thm:lpp-is-lfp,
+    a menor solução de um sistema de equações
+    também é a menor solução do sistema de inequações.
+    Consequentemente, a substituição também vale o sistema de inequações.
+]
+
 
 = Usando os sistemas
 
@@ -1667,8 +1702,6 @@ que contém todas as transições dos estados que participavam daquele loop ε
 
 == Uma prova de $(a^*)^* = (a^*)$
 
-Esta técnica oferece uma prova elegante de que $(a^*)^* = a^*$
-
 $
   X = (a^*)^*
 $
@@ -1705,146 +1738,5 @@ $
 $
   X &= a^* \
 $
-
-
-/////////////////////
-= Pontos Fixos
-/////////////////////
-
-Como vimos anteriormente, podemos usar sistemas de equações
-para calcular a linguagem de um autômato,
-ou o autômato de uma linguagem,
-ou mesmo para mostrar que dois autômatos reconhecem a mesma linguagem.
-
-No entanto, um leitor mais desconfiado talvez já tenha se perguntado:
-podemos mesmo manipular os sistemas de equação desta forma?
-Afinal de contas, não estamos lidando meramente com sistemas comuns,
-mas sistemas para o qual buscamos a solução menor / mais simples.
-Talvez seja fácil de se convencer que,
-após uma operação como substitição de variável,
-a solução do antigo sistema também é uma solução do novo sistema.
-Mas quem disse que ela continua sendo é a #emph[menor] solução do novo sistema?
-
-Neste capítulo veremos que sim,
-as maneiras de manipular sistemas que vimos nos capítulos anteriores são válidas.
-Mas para tal, precisaremos introduzir uma teoria matemática mais robusta.
-
-
-== Conjuntos Parcialmente Ordenados
-
-Na matemática,
-às vezes é mais fácil trabalhar com uma forma mais geral do problema,
-pois ela tem menos "partes móveis" e evidencia quais são as propriedades
-que são essenciais para provar os teoremas de nosso interesse.
-
-O primeiro ponto diz sobre o conjunto dos objetos que são candidatos
-a solução dos nossos sistemas de equação. No contexto de linguagens
-formais, os nossos objetos são linguagens (subconjuntos de $Σ^*$),
-e dizemos que uma linguagem é mais simples que a outra
-quando a primeira é subconjunto da segunda.
-Podemos generalizar esta ideia para evidenciar
-que a questão mais central é que existe uma maneira de ordenar linguagens,
-e não o fato de que as linguagens são conjuntos de palavras.
-
-#definition[Conjunto Parcialmente Ordenado][
-    Um #emph[conjunto parcialmente ordenado],
-    (abreviação: #emph[poset]),
-    é um par $(A, ≤)$ que consiste de um conjunto $A$
-    e uma relação $≤$ que descreve uma ordem parcial entre os elementos de $A$:
-
-    - Reflexividade: $a ≤ a$
-    - Transitividade: se $a ≤ b$ e $b ≤ c$ então $a ≤ c$
-    - Anti-simetria: se $a ≤ b$ e $b ≤ a$ então $a = b$
-]
-
-A ordem parcial não precisa ser uma ordem total, como ocorre nos números naturais.
-Lá, também podemos sempre dizer que
-para quaisquer $a$ e $b$, vale $a ≤ b$ ou $b ≤ a$.
-Já no caso dos conjuntos ordenados por $⊆$, é comum encontrar sistuações em que
-nem~$a$ nem~$b$ são subconjuntos um do outro.
-
-
-== Funções monotônicas
-
-#definition[Função Monotônica][
-    Uma função $F:A→B$ é dita #emph[monotônica]
-    se para todo $x ≤ y$,
-    temos $F(x) prec.eq F(y)$
-]
-
-Se interpretarmos a ordem $x≤y$ como "y tem mais informação que x",
-as função monotônicas são aquelas em que uma entrada com mais informação
-leva a uma saída com mais informação.
-
-Exercício: mostre que as operações de
-concatenação, união, e estrela de Kleene
-são monotônicas.
-
-Um dos principais motivos do nosso interesse pelas funções monotônicas
-é que podemos usá-las para construir sequências crescentes.
-
-$
-⊥  ≤ F(⊥) ≤ F^2(⊥) ≤ F^3(⊥) ≤ ...
-$
-
-Quando temos uma sequência crescente e limitada, podemos tratar
-matemáticamente sobre o limite para qual ela tende no infinito.
-Este limite é uma maneira de fundamentar o menor ponto fixo que
-obedece $F(x) = x$, sem usar uma definição auto-recursiva,
-que potencialmente seria vulnerável a paradoxos matemáticos.
-
-
-== Pontos fixos
-
-Dada uma endofunção $f:A→A$,
-dizemos que um valor $x ∈ A$ é:
-
-#definition[Ponto fixo][quando $f(x) = x$.]
-#definition[Ponto pré-fixo][quando $f(x) ≤ x$.]
-#definition[Ponto pós-fixo][quando $x ≤ f(x)$.]
-
-#let lfp(f) = $μ #f$
-#let gfp(f) = $ν #f$
-
-#definition[Menor ponto pré-fixo][
-    Escrevemos $lfp(f)$ para denominar o menor ponto pré-fixo de uma função $f$.
-    Ele segue as seguintes regras:
-    - (computação): $f(lfp(f)) ≤ lfp(f)$
-    - (indução): $f(x) ≤ x → lfp(f) ≤ x$
-]
-
-#theorem[
-    O menor ponto pré-fixo de uma função monotônica $F$ é único.
-]
-
-#proof[
-    Suponha que $x$ e $y$ são menores pontos fixos de $F$.
-    Pela regra da computação, $y$ é um ponto pré-fixo.
-    Logo, pela regra de indução, devemos ter $x ≤ y$.
-    Podemos usar um argumento similar para provar $y ≤ x$.
-    Concluímos, por antisimetria, que $x=y$.
-]
-
-O seguinte teorema nos diz que para mostrar que um valor é o menor ponto fixo,
-é suficiente mostrar que ele é o menor ponto pré-fixo, pois ambos coincidem.
-Também nos permite usar a notação $lfp(f)$ para se referir
-tanto para o menor ponto pré-fixo quanto para o menor ponto fixo.
-
-#theorem[
-    O menor ponto pré-fixo de uma função monotônica $F$ também é
-    o seu menor ponto fixo.
-]
-
-#proof[
-    Um ponto fixo é um ponto que é tanto pré-fixo quanto pós-fixo.
-    Para mostrar que o menor ponto pré-fixo coincide com o menor ponto fixo,
-    basta mostrar que o menor ponto pré-fixo também é um ponto pós-fixo.
-
-    $
-    & lfp(f) ≤ f(lfp(f)) \
-    & ⇐ f(f(lfp(f))) ≤ f(lfp(f)) \
-    & ⇐ f(lfp(f)) ≤ lfp(f) \
-    $
-]
 
 
