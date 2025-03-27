@@ -8,7 +8,7 @@
 #let lemma      = thmplain("lemma", "Lema", titlefmt: strong)
 #let definition = thmplain("definition", "Definição", titlefmt: strong)
 #let corollary  = thmplain("corollary", "Corolário",  titlefmt: strong)
-#let example    = thmplain("examplo", "Examplo").with(numbering: none)
+#let example    = thmplain("exemplo", "Exemplo").with(numbering: none)
 #let proof      = thmproof("prova", "Prova")
 #let exercise   = thmplain("exercise", "Exercício",  titlefmt: strong).with(base_level: 1)
 
@@ -265,7 +265,7 @@ e outras são extensões das operações sobre strings.
 
 == Expressões regulares
 
-Escrever ${ε}$ e ${a}$ fica reperitivo bem rápido.
+Escrever ${ε}$ e ${a}$ fica repetitivo bem rápido.
 É comum abreviarmos para $ε$ e $a$ quando
 estiver claro pelo contexto que estamos falando de conjuntos.
 
@@ -302,7 +302,7 @@ $
     emptyset ∪ A = A = A ∪ emptyset
 $
 
-A união é indepotente
+A união é idempotente
 $
     A ∪ A = A
 $
@@ -386,7 +386,7 @@ Ele tem um único estado inicial,
 e arestas que saem do mesmo estado não compartilham nenhum prefixo.
 Em particular, não podem começar com a mesma letra,
 e também não existem arestas com rótulo vazio.
-Podemos enxegar que a relação de transição tem
+Podemos enxergar que a relação de transição tem
 uma dependência funcional:
 dado o estado atual e a próxima letra da entrada,
 há no máximo um estado de destino possível.
@@ -999,6 +999,20 @@ podemos assumir de vez a hipótese mais forte de que é um ponto fixo.
         fixl(y, g(fixl(x, f(x,y)), y))
       )
     $
+
+    #let aa = block[$ x ⊇ f(x,y) \ y ⊇ g(x,y) $]
+    #let bb = block[$
+        fixu(x, f(x, fixu(y, g(x,y)))) \
+        fixu(y, g(fixu(x, f(x,y)), y))
+    $]
+    $ μ(#aa) = (#bb) $
+
+    #let aa = block[$ x |-> f(x,y) \ y |-> g(x,y) $]
+    #let bb = block[$
+        fixl(x, f(x, fixl(y, g(x,y)))) \
+        fixl(y, g(fixl(x, f(x,y)), y))
+    $]
+    $ μ(#aa) = (#bb) $
 ]
 #proof[
     Winskel (1993) capítulo 10.
